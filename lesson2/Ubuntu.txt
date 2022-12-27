@@ -1,0 +1,810 @@
+ubuntu
+
+3) Произвести минимальную настройку
+
+-hostname
+
+vagrant@ubuntu-focal:~$ hostname
+ubuntu-focal
+
+vagrant@ubuntu-focal:~$ sudo hostnamectl set-hostname ubuntu22
+vagrant@ubuntu-focal:~$ exit
+logout
+core@XB-NB:~/vagrant_vm$ vagrant ssh
+
+Last login: Wed Dec  7 19:35:53 2022 from 10.0.2.2
+vagrant@ubuntu22:~$ hostname
+ubuntu22
+
+
+- IP
+
+vagrant@ubuntu22:~$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1c:1b:07:d9:f7 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 86366sec preferred_lft 86366sec
+    inet6 fe80::1c:1bff:fe07:d9f7/64 scope link 
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 08:00:27:99:91:02 brd ff:ff:ff:ff:ff:ff
+vagrant@ubuntu22:~$ sudo ip link set enp0s8 up
+vagrant@ubuntu22:~$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1c:1b:07:d9:f7 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 86030sec preferred_lft 86030sec
+    inet6 fe80::1c:1bff:fe07:d9f7/64 scope link 
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:99:91:02 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::a00:27ff:fe99:9102/64 scope link 
+       valid_lft forever preferred_lft forever
+
+vagrant@ubuntu22:~$ sudo ip addr add 192.168.0.199/255.255.255.0 dev enp0s8
+vagrant@ubuntu22:~$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1c:1b:07:d9:f7 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 85337sec preferred_lft 85337sec
+    inet6 fe80::1c:1bff:fe07:d9f7/64 scope link 
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:99:91:02 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.0.199/24 scope global enp0s8
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a00:27ff:fe99:9102/64 scope link 
+       valid_lft forever preferred_lft forever
+vagrant@ubuntu22:~$ 
+
+
+- Netplan
+
+vagrant@ubuntu22:~$ cat /etc/netplan/50-cloud-init.yaml 
+# This file is generated from information provided by the datasource.  Changes
+# to it will not persist across an instance reboot.  To disable cloud-init's
+# network configuration capabilities, write a file
+# /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg with the following:
+# network: {config: disabled}
+network:
+    ethernets:
+        enp0s3:
+            dhcp4: true
+            match:
+                macaddress: 02:1c:1b:07:d9:f7
+            set-name: enp0s3
+    version: 2
+vagrant@ubuntu22:~$ sudo vim /etc/netplan/50-cloud-init.yaml 
+vagrant@ubuntu22:~$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1c:1b:07:d9:f7 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 85055sec preferred_lft 85055sec
+    inet6 fe80::1c:1bff:fe07:d9f7/64 scope link 
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:99:91:02 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.0.199/24 scope global enp0s8
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a00:27ff:fe99:9102/64 scope link 
+       valid_lft forever preferred_lft forever
+vagrant@ubuntu22:~$ sudo netplan apply 
+vagrant@ubuntu22:~$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1c:1b:07:d9:f7 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 86398sec preferred_lft 86398sec
+    inet6 fe80::1c:1bff:fe07:d9f7/64 scope link 
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:99:91:02 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.3.2/24 brd 192.168.3.255 scope global enp0s8
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a00:27ff:fe99:9102/64 scope link 
+       valid_lft forever preferred_lft forever
+        
+vagrant@ubuntu22:~$ cat /etc/netplan/50-cloud-init.yaml 
+# This file is generated from information provided by the datasource.  Changes
+# to it will not persist across an instance reboot.  To disable cloud-init's
+# network configuration capabilities, write a file
+# /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg with the following:
+# network: {config: disabled}
+network:
+    ethernets:
+        enp0s3:
+            dhcp4: true
+            match:
+                macaddress: 02:1c:1b:07:d9:f7
+            set-name: enp0s3
+        enp0s8:
+            dhcp4: no
+            addresses: [192.168.3.2/24]
+            gateway4:  192.168.3.1
+            nameservers:
+                    addresses: [8.8.8.8]
+
+    version: 2
+vagrant@ubuntu22:~$ 
+
+- Hosts
+
+vagrant@ubuntu22:~$ cat /etc/hosts
+127.0.0.1	localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1	ip6-localhost	ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+ff02::3	ip6-allhosts
+127.0.1.1	ubuntu-focal	ubuntu-focal
+
+vagrant@ubuntu22:~$ sudo vim /etc/hosts
+vagrant@ubuntu22:~$ cat /etc/hosts
+127.0.0.1	localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1	ip6-localhost	ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+ff02::3	ip6-allhosts
+127.0.1.1	ubuntu22	ubuntu22
+
+
+4) Снимок_Ubuntu.jpg
+
+5) Версия ядра
+vagrant@ubuntu22:~$ uname -srm
+Linux 5.4.0-132-generic x86_64
+
+6) Вывести в файл список модулей
+
+vagrant@ubuntu22:~$ lsmod  > spisok_modules.txt
+vagrant@ubuntu22:~$ cat spisok_modules.txt 
+Module                  Size  Used by
+vboxsf                 81920  0
+isofs                  49152  0
+dm_multipath           32768  0
+scsi_dh_rdac           16384  0
+scsi_dh_emc            16384  0
+scsi_dh_alua           20480  0
+binfmt_misc            24576  1
+input_leds             16384  0
+serio_raw              20480  0
+vboxguest             352256  2 vboxsf
+video                  53248  0
+sch_fq_codel           20480  2
+efi_pstore             16384  0
+msr                    16384  0
+ip_tables              32768  0
+x_tables               40960  1 ip_tables
+autofs4                45056  2
+btrfs                1265664  0
+zstd_compress         167936  1 btrfs
+raid10                 61440  0
+raid456               155648  0
+async_raid6_recov      24576  1 raid456
+async_memcpy           20480  2 raid456,async_raid6_recov
+async_pq               24576  2 raid456,async_raid6_recov
+async_xor              20480  3 async_pq,raid456,async_raid6_recov
+async_tx               20480  5 async_pq,async_memcpy,async_xor,raid456,async_raid6_recov
+xor                    24576  2 async_xor,btrfs
+raid6_pq              114688  4 async_pq,btrfs,raid456,async_raid6_recov
+libcrc32c              16384  2 btrfs,raid456
+raid1                  45056  0
+raid0                  24576  0
+multipath              20480  0
+linear                 20480  0
+crct10dif_pclmul       16384  1
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+vboxvideo              32768  1
+drm_vram_helper        20480  1 vboxvideo
+ttm                   106496  1 drm_vram_helper
+drm_kms_helper        184320  1 vboxvideo
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+sysimgblt              16384  1 drm_kms_helper
+aesni_intel           372736  0
+crypto_simd            16384  1 aesni_intel
+fb_sys_fops            16384  1 drm_kms_helper
+mptspi                 24576  3
+scsi_transport_spi     32768  1 mptspi
+cryptd                 24576  2 crypto_simd,ghash_clmulni_intel
+glue_helper            16384  1 aesni_intel
+drm                   495616  5 drm_kms_helper,drm_vram_helper,vboxvideo,ttm
+mptscsih               40960  1 mptspi
+psmouse               155648  0
+mptbase                94208  2 mptspi,mptscsih
+e1000                 147456  0
+vagrant@ubuntu22:~$ 
+
+7) Посмотреть информацию о процессоре и модулях оперативной памяти
+
+vagrant@ubuntu22:~$ lscpu 
+Architecture:                    x86_64
+CPU op-mode(s):                  32-bit, 64-bit
+Byte Order:                      Little Endian
+Address sizes:                   39 bits physical, 48 bits
+                                  virtual
+CPU(s):                          2
+On-line CPU(s) list:             0,1
+Thread(s) per core:              1
+Core(s) per socket:              2
+Socket(s):                       1
+NUMA node(s):                    1
+Vendor ID:                       GenuineIntel
+CPU family:                      6
+Model:                           140
+Model name:                      11th Gen Intel(R) Core(TM
+                                 ) i7-1165G7 @ 2.80GHz
+Stepping:                        1
+CPU MHz:                         2803.198
+BogoMIPS:                        5606.39
+Hypervisor vendor:               KVM
+Virtualization type:             full
+L1d cache:                       96 KiB
+L1i cache:                       64 KiB
+L2 cache:                        2.5 MiB
+L3 cache:                        24 MiB
+NUMA node0 CPU(s):               0,1
+Vulnerability Itlb multihit:     KVM: Vulnerable
+
+vagrant@ubuntu22:~$ sudo dmidecode 
+# dmidecode 3.2
+Getting SMBIOS data from sysfs.
+SMBIOS 2.5 present.
+10 structures occupying 455 bytes.
+Table at 0x000E1000.
+
+Handle 0x0000, DMI type 0, 20 bytes
+BIOS Information
+	Vendor: innotek GmbH
+	Version: VirtualBox
+	Release Date: 12/01/2006
+	Address: 0xE0000
+	Runtime Size: 128 kB
+	ROM Size: 128 kB
+	Characteristics:
+		ISA is supported
+		PCI is supported
+		Boot from CD is supported
+		Selectable boot is supported
+		8042 keyboard services are supported (int 9h)
+		CGA/mono video services are supported (int 10h)
+		ACPI is supported
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+	Manufacturer: innotek GmbH
+	Product Name: VirtualBox
+	Version: 1.2
+	Serial Number: 0
+	UUID: d8e330a6-18ad-a146-8419-c5dc68c71546
+	Wake-up Type: Power Switch
+	SKU Number: Not Specified
+	Family: Virtual Machine
+
+Handle 0x0008, DMI type 2, 15 bytes
+Base Board Information
+	Manufacturer: Oracle Corporation
+	Product Name: VirtualBox
+	Version: 1.2
+	Serial Number: 0
+	Asset Tag: Not Specified
+	Features:
+		Board is a hosting board
+	Location In Chassis: Not Specified
+	Chassis Handle: 0x0003
+	Type: Motherboard
+	Contained Object Handles: 0
+
+Handle 0x0003, DMI type 3, 13 bytes
+Chassis Information
+	Manufacturer: Oracle Corporation
+	Type: Other
+	Lock: Not Present
+	Version: Not Specified
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Boot-up State: Safe
+	Power Supply State: Safe
+	Thermal State: Safe
+	Security Status: None
+
+Handle 0x0007, DMI type 126, 42 bytes
+Inactive
+
+Handle 0x0005, DMI type 126, 15 bytes
+Inactive
+
+Handle 0x0006, DMI type 126, 34 bytes
+Inactive
+
+Handle 0x0002, DMI type 11, 7 bytes
+OEM Strings
+	String 1: vboxVer_7.0.4
+	String 2: vboxRev_154605
+
+Handle 0x0008, DMI type 128, 8 bytes
+OEM-specific Type
+	Header and Data:
+		80 08 08 00 FF C5 2A 00
+
+Handle 0xFEFF, DMI type 127, 4 bytes
+End Of Table
+
+8) Получить информацию о жестком диске
+
+vagrant@ubuntu22:~$ lsblk 
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0    7:0    0 63.2M  1 loop /snap/core20/1695
+loop1    7:1    0 67.8M  1 loop /snap/lxd/22753
+loop2    7:2    0 49.7M  1 loop /snap/snapd/17576
+sda      8:0    0   40G  0 disk 
+└─sda1   8:1    0   40G  0 part /
+sdb      8:16   0   10M  0 disk 
+vagrant@ubuntu22:~$ 
+
+9) Добавить в виртуальную машину второй сетевой интерфейс
+
+vagrant@ubuntu22:~$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1c:1b:07:d9:f7 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 84847sec preferred_lft 84847sec
+    inet6 fe80::1c:1bff:fe07:d9f7/64 scope link 
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 08:00:27:99:91:02 brd ff:ff:ff:ff:ff:ff
+
+    vagrant@ubuntu22:~$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 02:1c:1b:07:d9:f7 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 86346sec preferred_lft 86346sec
+    inet6 fe80::1c:1bff:fe07:d9f7/64 scope link 
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 08:00:27:99:91:02 brd ff:ff:ff:ff:ff:ff
+4: enp0s9: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 08:00:27:da:ba:c3 brd ff:ff:ff:ff:ff:ff
+
+
+10) Вывести инфо о PCIEx
+
+vagrant@ubuntu22:~$ lspci -vmm
+Slot:	00:00.0
+Class:	Host bridge
+Vendor:	Intel Corporation
+Device:	440FX - 82441FX PMC [Natoma]
+Rev:	02
+
+Slot:	00:01.0
+Class:	ISA bridge
+Vendor:	Intel Corporation
+Device:	82371SB PIIX3 ISA [Natoma/Triton II]
+
+Slot:	00:01.1
+Class:	IDE interface
+Vendor:	Intel Corporation
+Device:	82371AB/EB/MB PIIX4 IDE
+Rev:	01
+ProgIf:	8a
+
+Slot:	00:02.0
+Class:	VGA compatible controller
+Vendor:	InnoTek Systemberatung GmbH
+Device:	VirtualBox Graphics Adapter
+
+Slot:	00:03.0
+Class:	Ethernet controller
+Vendor:	Intel Corporation
+Device:	82540EM Gigabit Ethernet Controller
+SVendor:	Intel Corporation
+SDevice:	PRO/1000 MT Desktop Adapter
+Rev:	02
+
+Slot:	00:04.0
+Class:	System peripheral
+Vendor:	InnoTek Systemberatung GmbH
+Device:	VirtualBox Guest Service
+
+Slot:	00:05.0
+Class:	Multimedia audio controller
+Vendor:	Intel Corporation
+Device:	82801AA AC'97 Audio Controller
+SVendor:	Intel Corporation
+SDevice:	82801AA AC'97 Audio Controller
+Rev:	01
+
+Slot:	00:07.0
+Class:	Bridge
+Vendor:	Intel Corporation
+Device:	82371AB/EB/MB PIIX4 ACPI
+Rev:	08
+
+Slot:	00:08.0
+Class:	Ethernet controller
+Vendor:	Intel Corporation
+Device:	82540EM Gigabit Ethernet Controller
+SVendor:	Intel Corporation
+SDevice:	PRO/1000 MT Desktop Adapter
+Rev:	02
+
+Slot:	00:09.0
+Class:	Ethernet controller
+Vendor:	Intel Corporation
+Device:	82540EM Gigabit Ethernet Controller
+SVendor:	Intel Corporation
+SDevice:	PRO/1000 MT Desktop Adapter
+Rev:	02
+
+Slot:	00:14.0
+Class:	SCSI storage controller
+Vendor:	Broadcom / LSI
+Device:	53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI
+SVendor:	Broadcom / LSI
+SDevice:	53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI
+
+vagrant@ubuntu22:~$ 
+
+11) vagrant@ubuntu22:~$ sudo lshw -C network
+  *-network:0               
+       description: Ethernet interface
+       product: 82540EM Gigabit Ethernet Controller
+       vendor: Intel Corporation
+       physical id: 3
+       bus info: pci@0000:00:03.0
+       logical name: enp0s3
+       version: 02
+       serial: 02:1c:1b:07:d9:f7
+       size: 1Gbit/s
+       capacity: 1Gbit/s
+       width: 32 bits
+       clock: 66MHz
+       capabilities: pm pcix bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+       configuration: autonegotiation=on broadcast=yes driver=e1000 driverversion=7.3.21-k8-NAPI duplex=full ip=10.0.2.15 latency=64 link=yes mingnt=255 multicast=yes port=twisted pair speed=1Gbit/s
+       resources: irq:19 memory:f0000000-f001ffff ioport:d010(size=8)
+  *-network:1 DISABLED
+       description: Ethernet interface
+       product: 82540EM Gigabit Ethernet Controller
+       vendor: Intel Corporation
+       physical id: 8
+       bus info: pci@0000:00:08.0
+       logical name: enp0s8
+       version: 02
+       serial: 08:00:27:99:91:02
+       size: 1Gbit/s
+       capacity: 1Gbit/s
+       width: 32 bits
+       clock: 66MHz
+       capabilities: pm pcix bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+       configuration: autonegotiation=on broadcast=yes driver=e1000 driverversion=7.3.21-k8-NAPI duplex=full latency=64 link=no mingnt=255 multicast=yes port=twisted pair speed=1Gbit/s
+       resources: irq:16 memory:f0820000-f083ffff ioport:d240(size=8)
+  *-network:2 DISABLED
+       description: Ethernet interface
+       product: 82540EM Gigabit Ethernet Controller
+       vendor: Intel Corporation
+       physical id: 9
+       bus info: pci@0000:00:09.0
+       logical name: enp0s9
+       version: 02
+       serial: 08:00:27:da:ba:c3
+       size: 1Gbit/s
+       capacity: 1Gbit/s
+       width: 32 bits
+       clock: 66MHz
+       capabilities: pm pcix bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+       configuration: autonegotiation=on broadcast=yes driver=e1000 driverversion=7.3.21-k8-NAPI duplex=full latency=64 link=no mingnt=255 multicast=yes port=twisted pair speed=1Gbit/s
+       resources: irq:17 memory:f0840000-f085ffff ioport:d248(size=8)
+vagrant@ubuntu22:~$ 
+
+
+vagrant@ubuntu22:~$ lsmod 
+Module                  Size  Used by
+ufs                    81920  0
+msdos                  20480  0
+xfs                  1282048  0
+vboxsf                 81920  0
+isofs                  49152  0
+dm_multipath           32768  0
+scsi_dh_rdac           16384  0
+scsi_dh_emc            16384  0
+scsi_dh_alua           20480  0
+binfmt_misc            24576  1
+input_leds             16384  0
+serio_raw              20480  0
+video                  53248  0
+vboxguest             352256  2 vboxsf
+sch_fq_codel           20480  2
+msr                    16384  0
+efi_pstore             16384  0
+ip_tables              32768  0
+x_tables               40960  1 ip_tables
+autofs4                45056  2
+btrfs                1265664  0
+zstd_compress         167936  1 btrfs
+raid10                 61440  0
+raid456               155648  0
+async_raid6_recov      24576  1 raid456
+async_memcpy           20480  2 raid456,async_raid6_recov
+async_pq               24576  2 raid456,async_raid6_recov
+async_xor              20480  3 async_pq,raid456,async_raid6_recov
+async_tx               20480  5 async_pq,async_memcpy,async_xor,raid456,async_raid6_recov
+xor                    24576  2 async_xor,btrfs
+raid6_pq              114688  4 async_pq,btrfs,raid456,async_raid6_recov
+libcrc32c              16384  3 btrfs,xfs,raid456
+raid1                  45056  0
+raid0                  24576  0
+multipath              20480  0
+linear                 20480  0
+crct10dif_pclmul       16384  1
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+vboxvideo              32768  1
+drm_vram_helper        20480  1 vboxvideo
+ttm                   106496  1 drm_vram_helper
+drm_kms_helper        184320  1 vboxvideo
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+aesni_intel           372736  0
+crypto_simd            16384  1 aesni_intel
+cryptd                 24576  2 crypto_simd,ghash_clmulni_intel
+glue_helper            16384  1 aesni_intel
+sysimgblt              16384  1 drm_kms_helper
+fb_sys_fops            16384  1 drm_kms_helper
+mptspi                 24576  3
+scsi_transport_spi     32768  1 mptspi
+mptscsih               40960  1 mptspi
+psmouse               155648  0
+mptbase                94208  2 mptspi,mptscsih
+e1000                 147456  0
+drm                   495616  5 drm_kms_helper,drm_vram_helper,vboxvideo,ttm
+vagrant@ubuntu22:~$ 
+
+
+vagrant@ubuntu22:~$ modinfo e1000
+filename:       /lib/modules/5.4.0-132-generic/kernel/drivers/net/ethernet/intel/e1000/e1000.ko
+version:        7.3.21-k8-NAPI
+license:        GPL v2
+description:    Intel(R) PRO/1000 Network Driver
+author:         Intel Corporation, <linux.nics@intel.com>
+srcversion:     FCB88217EDA1AA26ACC1A02
+alias:          pci:v00008086d00002E6Esv*sd*bc*sc*i*
+alias:          pci:v00008086d000010B5sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001099sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000108Asv*sd*bc*sc*i*
+alias:          pci:v00008086d0000107Csv*sd*bc*sc*i*
+alias:          pci:v00008086d0000107Bsv*sd*bc*sc*i*
+alias:          pci:v00008086d0000107Asv*sd*bc*sc*i*
+alias:          pci:v00008086d00001079sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001078sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001077sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001076sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001075sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001028sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001027sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001026sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000101Esv*sd*bc*sc*i*
+alias:          pci:v00008086d0000101Dsv*sd*bc*sc*i*
+alias:          pci:v00008086d0000101Asv*sd*bc*sc*i*
+alias:          pci:v00008086d00001019sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001018sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001017sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001016sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001015sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001014sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001013sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001012sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001011sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001010sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000100Fsv*sd*bc*sc*i*
+alias:          pci:v00008086d0000100Esv*sd*bc*sc*i*
+alias:          pci:v00008086d0000100Dsv*sd*bc*sc*i*
+alias:          pci:v00008086d0000100Csv*sd*bc*sc*i*
+alias:          pci:v00008086d00001009sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001008sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001004sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001001sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001000sv*sd*bc*sc*i*
+depends:        
+retpoline:      Y
+intree:         Y
+name:           e1000
+vermagic:       5.4.0-132-generic SMP mod_unload modversions 
+sig_id:         PKCS#7
+signer:         Build time autogenerated kernel key
+sig_key:        35:60:5E:A1:13:7C:A6:BD:32:8F:67:99:F9:64:C0:63:59:C2:C3:6B
+sig_hashalgo:   sha512
+signature:      B4:65:72:5B:F2:1D:A1:69:84:BF:A0:C2:B9:FA:93:6A:55:3B:50:C2:
+		8E:DE:F7:C9:C6:FE:A7:D7:F1:0C:16:BB:4E:04:A7:71:7F:DC:31:BD:
+		C1:DC:F0:29:0C:B5:8B:11:E7:0B:AE:D5:25:8C:8D:23:83:EE:3B:DF:
+		4A:A0:64:27:ED:FC:8E:F0:92:22:76:EB:F6:FB:68:36:CD:CF:CF:65:
+		38:CC:E7:09:35:E2:17:67:5B:16:AB:77:16:57:01:E0:A2:9A:31:27:
+		74:09:98:AF:99:39:06:B1:75:85:D1:A1:37:94:C9:85:7D:E0:9A:22:
+		2E:AF:72:E4:A8:60:A2:CB:46:AE:45:38:06:EB:3E:17:95:7D:1D:8D:
+		45:FF:3E:6D:51:E0:D2:92:06:1F:DC:02:D9:5A:AD:AD:27:65:F8:22:
+		F0:5B:73:D0:98:A7:9D:D2:B0:7A:75:E0:E2:A8:6E:34:68:41:D1:EE:
+		BE:DB:A3:9A:87:77:DF:6A:A8:D9:DF:36:15:17:A5:E5:BE:49:2C:27:
+		F3:02:11:86:6D:E3:7B:8D:55:0D:49:35:6B:7A:A0:61:FD:C4:E8:53:
+		12:31:7D:D1:36:FB:BE:22:77:CE:71:BD:73:9D:53:F4:09:2D:1A:56:
+		A7:B8:BA:CC:3C:65:DE:AD:F7:9E:80:41:CC:E8:16:F5:54:9C:88:36:
+		6B:CC:AF:54:A5:95:6E:C1:EA:FB:9A:8E:E9:AD:F8:86:B1:18:8A:BF:
+		7D:9A:ED:ED:9F:34:05:71:3C:79:36:07:3F:AB:42:67:D2:0C:E9:98:
+		CD:23:A9:D6:97:3F:46:C9:F9:36:71:8D:A1:78:44:3D:40:A4:0E:1D:
+		A1:FF:C5:37:4D:97:83:AC:4A:F3:4D:98:0C:3B:EB:3E:77:93:15:93:
+		52:5C:D7:2A:69:F3:F9:7B:8D:57:37:E3:8B:33:C9:14:32:D2:C4:A4:
+		E8:B3:CB:9F:3E:E3:9C:3C:54:D6:0D:0F:44:BF:24:3A:AC:B1:35:9A:
+		ED:49:73:CA:69:E2:FA:CA:12:1C:4A:87:CE:07:8F:A2:BC:95:6A:DF:
+		0A:D4:FE:37:C8:8A:E9:4D:61:BB:5F:0B:40:33:90:E8:19:54:21:54:
+		6B:B2:E0:CD:81:4B:6C:14:8B:61:C2:61:A6:E2:B4:A9:53:AA:0F:81:
+		EF:78:8B:10:49:BB:2E:12:CC:DF:89:2F:74:8A:91:FC:67:19:A8:A8:
+		EE:34:F0:C7:D6:99:62:67:65:BB:60:BA:A3:81:08:47:0E:16:04:8A:
+		5D:E5:ED:68:C2:FF:39:AE:68:9E:64:1A:BB:CF:FC:A7:25:A4:2D:31:
+		49:A5:FB:C6:87:F9:89:B3:01:CE:B5:AF
+parm:           TxDescriptors:Number of transmit descriptors (array of int)
+parm:           RxDescriptors:Number of receive descriptors (array of int)
+parm:           Speed:Speed setting (array of int)
+parm:           Duplex:Duplex setting (array of int)
+parm:           AutoNeg:Advertised auto-negotiation setting (array of int)
+parm:           FlowControl:Flow Control setting (array of int)
+parm:           XsumRX:Disable or enable Receive Checksum offload (array of int)
+parm:           TxIntDelay:Transmit Interrupt Delay (array of int)
+parm:           TxAbsIntDelay:Transmit Absolute Interrupt Delay (array of int)
+parm:           RxIntDelay:Receive Interrupt Delay (array of int)
+parm:           RxAbsIntDelay:Receive Absolute Interrupt Delay (array of int)
+parm:           InterruptThrottleRate:Interrupt Throttling Rate (array of int)
+parm:           SmartPowerDownEnable:Enable PHY smart power down (array of int)
+parm:           copybreak:Maximum size of packet that is copied to a new buffer on receive (uint)
+parm:           debug:Debug level (0=none,...,16=all) (int)
+vagrant@ubuntu22:~$ 
+
+vagrant@ubuntu22:~$ modprobe -r e1000
+modprobe: ERROR: ../libkmod/libkmod-module.c:799 kmod_module_remove_module() could not remove 'e1000': Operation not permitted
+vagrant@ubuntu22:~$ sudo !!
+sudo modprobe -r e1000
+
+Скрины с VirtualBox
+удаление модуля сети №1.jpg
+удаление модуля сети №2.jpg
+удаление модуля сети №3.jpg
+удаление модуля сети №4.jpg
+
+core@XB-NB:~/vagrant_vm$ vagrant ssh
+Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.4.0-132-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sat Dec 10 20:11:05 UTC 2022
+
+  System load:  0.06              Processes:               125
+  Usage of /:   5.3% of 38.70GB   Users logged in:         1
+  Memory usage: 27%               IPv4 address for enp0s3: 10.0.2.15
+  Swap usage:   0%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+5 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+New release '22.04.1 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+Last login: Sat Dec 10 19:58:25 2022
+vagrant@ubuntu22:~$ lsmod 
+Module                  Size  Used by
+e1000                 147456  0
+ufs                    81920  0
+msdos                  20480  0
+xfs                  1282048  0
+vboxsf                 81920  0
+isofs                  49152  0
+dm_multipath           32768  0
+scsi_dh_rdac           16384  0
+scsi_dh_emc            16384  0
+scsi_dh_alua           20480  0
+binfmt_misc            24576  1
+input_leds             16384  0
+serio_raw              20480  0
+video                  53248  0
+vboxguest             352256  2 vboxsf
+sch_fq_codel           20480  2
+msr                    16384  0
+efi_pstore             16384  0
+ip_tables              32768  0
+x_tables               40960  1 ip_tables
+autofs4                45056  2
+btrfs                1265664  0
+zstd_compress         167936  1 btrfs
+raid10                 61440  0
+raid456               155648  0
+async_raid6_recov      24576  1 raid456
+async_memcpy           20480  2 raid456,async_raid6_recov
+async_pq               24576  2 raid456,async_raid6_recov
+async_xor              20480  3 async_pq,raid456,async_raid6_recov
+async_tx               20480  5 async_pq,async_memcpy,async_xor,raid456,async_raid6_recov
+xor                    24576  2 async_xor,btrfs
+raid6_pq              114688  4 async_pq,btrfs,raid456,async_raid6_recov
+libcrc32c              16384  3 btrfs,xfs,raid456
+raid1                  45056  0
+raid0                  24576  0
+multipath              20480  0
+linear                 20480  0
+crct10dif_pclmul       16384  1
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+vboxvideo              32768  1
+drm_vram_helper        20480  1 vboxvideo
+ttm                   106496  1 drm_vram_helper
+drm_kms_helper        184320  1 vboxvideo
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+aesni_intel           372736  0
+crypto_simd            16384  1 aesni_intel
+cryptd                 24576  2 crypto_simd,ghash_clmulni_intel
+glue_helper            16384  1 aesni_intel
+sysimgblt              16384  1 drm_kms_helper
+fb_sys_fops            16384  1 drm_kms_helper
+mptspi                 24576  3
+scsi_transport_spi     32768  1 mptspi
+mptscsih               40960  1 mptspi
+psmouse               155648  0
+mptbase                94208  2 mptspi,mptscsih
+drm                   495616  5 drm_kms_helper,drm_vram_helper,vboxvideo,ttm
+vagrant@ubuntu22:~$ 
+
+
+

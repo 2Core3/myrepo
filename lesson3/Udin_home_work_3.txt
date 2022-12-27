@@ -1,0 +1,709 @@
+1)Установить систему применяя LVM
+
+core@XB-NB:~$ ssh root@localhost -p 2221
+root@localhosts password: 
+Last login: Thu Dec 15 17:39:10 2022 from 10.0.2.2
+[root@localhost ~]# cat /etc/os-release 
+NAME="CentOS Linux"
+VERSION="7 (Core)"
+ID="centos"
+ID_LIKE="rhel fedora"
+VERSION_ID="7"
+PRETTY_NAME="CentOS Linux 7 (Core)"
+ANSI_COLOR="0;31"
+CPE_NAME="cpe:/o:centos:centos:7"
+HOME_URL="https://www.centos.org/"
+BUG_REPORT_URL="https://bugs.centos.org/"
+
+CENTOS_MANTISBT_PROJECT="CentOS-7"
+CENTOS_MANTISBT_PROJECT_VERSION="7"
+REDHAT_SUPPORT_PRODUCT="centos"
+REDHAT_SUPPORT_PRODUCT_VERSION="7"
+
+[root@localhost ~]# lsblk -f
+NAME            FSTYPE      LABEL UUID                                   MOUNTPOINT
+sda                                                                      
+├─sda1                                                                   
+├─sda2          xfs               b90db704-0a95-4b36-b48a-8e4d4b707f8f   /boot
+└─sda3          LVM2_member       vrvO7M-wWjm-KyyL-ByhF-gUFj-blT0-K2eXWl 
+  ├─centos-root ext4              be50b5e9-14be-4bfe-9b9c-b66af1c57409   /
+  └─centos-var  xfs               93513c5c-28e8-489e-b913-fa3ba8ea4b62   /var
+sdb                                                                      
+└─sdb1          LVM2_member       xdt4E6-WmDM-gWsB-nbxh-MhdA-X1rm-2ONTHi 
+  ├─centos-swap swap              12876b7f-1d1c-4097-8961-43d583c54313   [SWAP]
+  ├─centos-home xfs               593d60e8-d90a-4751-a00b-af361cf0a11f   /home
+  └─centos-var  xfs               93513c5c-28e8-489e-b913-fa3ba8ea4b62   /var
+sr0     
+[root@localhost ~]# lsblk -l
+NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda           8:0    0   20G  0 disk 
+sda1          8:1    0    2M  0 part 
+sda2          8:2    0  4,7G  0 part /boot
+sda3          8:3    0 12,6G  0 part 
+centos-root 253:0    0  9,3G  0 lvm  /
+centos-var  253:3    0  4,7G  0 lvm  /var
+sdb           8:16   0   20G  0 disk 
+sdb1          8:17   0 17,2G  0 part 
+centos-swap 253:1    0  1,9G  0 lvm  [SWAP]
+centos-home 253:2    0   14G  0 lvm  /home
+centos-var  253:3    0  4,7G  0 lvm  /var
+sdc           8:32   0   20G  0 disk 
+sr0          11:0    1 1024M  0 rom  
+[root@localhost ~]# 
+
+
+2) Подключить пустой диск и создать на нём два основных и два логических раздела
+
+[root@localhost ~]# fdisk /dev/sdc 
+Welcome to fdisk (util-linux 2.23.2).
+
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table
+Building a new DOS disklabel with disk identifier 0x315f6989.
+
+Команда (m для справки): n
+Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+Select (default p): p
+Номер раздела (1-4, default 1): 1
+Первый sector (2048-41943039, по умолчанию 2048): 
+Используется значение по умолчанию 2048
+Last sector, +sectors or +size{K,M,G} (2048-41943039, по умолчанию 41943039): +2GB
+Partition 1 of type Linux and of size 1,9 GiB is set
+
+Команда (m для справки): n
+Partition type:
+   p   primary (1 primary, 0 extended, 3 free)
+   e   extended
+Select (default p): p
+Номер раздела (2-4, default 2): 2
+Первый sector (3907584-41943039, по умолчанию 3907584): 
+Используется значение по умолчанию 3907584
+Last sector, +sectors or +size{K,M,G} (3907584-41943039, по умолчанию 41943039): +2GB
+Partition 2 of type Linux and of size 1,9 GiB is set
+
+Команда (m для справки): w
+Таблица разделов была изменена!
+
+Вызывается ioctl() для перечитывания таблицы разделов.
+Синхронизируются диски.
+
+[root@localhost ~]# lsblk 
+NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda               8:0    0   20G  0 disk 
+├─sda1            8:1    0    2M  0 part 
+├─sda2            8:2    0  4,7G  0 part /boot
+└─sda3            8:3    0 12,6G  0 part 
+  ├─centos-root 253:0    0  9,3G  0 lvm  /
+  └─centos-var  253:3    0  4,7G  0 lvm  /var
+sdb               8:16   0   20G  0 disk 
+└─sdb1            8:17   0 17,2G  0 part 
+  ├─centos-swap 253:1    0  1,9G  0 lvm  [SWAP]
+  ├─centos-home 253:2    0   14G  0 lvm  /home
+  └─centos-var  253:3    0  4,7G  0 lvm  /var
+sdc               8:32   0   20G  0 disk 
+├─sdc1            8:33   0  1,9G  0 part 
+└─sdc2            8:34   0  1,9G  0 part 
+sr0              11:0    1 1024M  0 rom  
+[root@localhost ~]# 
+
+
+[root@localhost ~]# fdisk /dev/sdc 
+Welcome to fdisk (util-linux 2.23.2).
+
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+
+Команда (m для справки): n
+Partition type:
+   p   primary (2 primary, 0 extended, 2 free)
+   e   extended
+Select (default p): l
+Invalid partition type `l'
+
+Команда (m для справки): e
+e: неизвестная команда
+Действие команды
+   a   toggle a bootable flag
+   b   edit bsd disklabel
+   c   toggle the dos compatibility flag
+   d   delete a partition
+   g   create a new empty GPT partition table
+   G   create an IRIX (SGI) partition table
+   l   list known partition types
+   m   print this menu
+   n   add a new partition
+   o   create a new empty DOS partition table
+   p   print the partition table
+   q   quit without saving changes
+   s   create a new empty Sun disklabel
+   t   change a partition's system id
+   u   change display/entry units
+   v   verify the partition table
+   w   write table to disk and exit
+   x   extra functionality (experts only)
+
+Команда (m для справки): n
+Partition type:
+   p   primary (2 primary, 0 extended, 2 free)
+   e   extended
+Select (default p): e
+Номер раздела (3,4, default 3): 
+Первый sector (7813120-41943039, по умолчанию 7813120): 
+Используется значение по умолчанию 7813120
+Last sector, +sectors or +size{K,M,G} (7813120-41943039, по умолчанию 41943039): +1GB
+Partition 3 of type Extended and of size 954 MiB is set
+
+Команда (m для справки): n
+Partition type:
+   p   primary (2 primary, 1 extended, 1 free)
+   l   logical (numbered from 5)
+Select (default p): l
+Adding logical partition 5
+Первый sector (7815168-9766911, по умолчанию 7815168): 
+Используется значение по умолчанию 7815168
+Last sector, +sectors or +size{K,M,G} (7815168-9766911, по умолчанию 9766911): +500M
+Partition 5 of type Linux and of size 500 MiB is set
+
+Команда (m для справки): n
+Partition type:
+   p   primary (2 primary, 1 extended, 1 free)
+   l   logical (numbered from 5)
+Select (default p): l
+Adding logical partition 6
+Первый sector (8841216-9766911, по умолчанию 8841216): 
+Используется значение по умолчанию 8841216
+Last sector, +sectors or +size{K,M,G} (8841216-9766911, по умолчанию 9766911): +100M
+Partition 6 of type Linux and of size 100 MiB is set
+
+Команда (m для справки): p
+
+Disk /dev/sdc: 21.5 GB, 21474836480 bytes, 41943040 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x315f6989
+
+Устр-во Загр     Начало       Конец       Блоки   Id  Система
+/dev/sdc1            2048     3907583     1952768   83  Linux
+/dev/sdc2         3907584     7813119     1952768   83  Linux
+/dev/sdc3         7813120     9766911      976896    5  Extended
+/dev/sdc5         7815168     8839167      512000   83  Linux
+/dev/sdc6         8841216     9046015      102400   83  Linux
+
+Команда (m для справки): w
+Таблица разделов была изменена!
+
+Вызывается ioctl() для перечитывания таблицы разделов.
+Синхронизируются диски.
+[root@localhost ~]# lsblk 
+NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda               8:0    0   20G  0 disk 
+├─sda1            8:1    0    2M  0 part 
+├─sda2            8:2    0  4,7G  0 part /boot
+└─sda3            8:3    0 12,6G  0 part 
+  ├─centos-root 253:0    0  9,3G  0 lvm  /
+  └─centos-var  253:3    0  4,7G  0 lvm  /var
+sdb               8:16   0   20G  0 disk 
+└─sdb1            8:17   0 17,2G  0 part 
+  ├─centos-swap 253:1    0  1,9G  0 lvm  [SWAP]
+  ├─centos-home 253:2    0   14G  0 lvm  /home
+  └─centos-var  253:3    0  4,7G  0 lvm  /var
+sdc               8:32   0   20G  0 disk 
+├─sdc1            8:33   0  1,9G  0 part 
+├─sdc2            8:34   0  1,9G  0 part 
+├─sdc3            8:35   0    1K  0 part 
+├─sdc5            8:37   0  500M  0 part 
+└─sdc6            8:38   0  100M  0 part 
+sr0              11:0    1 1024M  0 rom  
+
+
+[root@localhost ~]# mkfs.ext4 /dev/sdc1
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+122160 inodes, 488192 blocks
+24409 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=501219328
+15 block groups
+32768 blocks per group, 32768 fragments per group
+8144 inodes per group
+Superblock backups stored on blocks: 
+	32768, 98304, 163840, 229376, 294912
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (8192 blocks): done
+Writing superblocks and filesystem accounting information: done 
+
+[root@localhost ~]# lsblk -f
+NAME            FSTYPE      LABEL UUID                                   MOUNTPOINT
+sda                                                                      
+├─sda1                                                                   
+├─sda2          xfs               b90db704-0a95-4b36-b48a-8e4d4b707f8f   /boot
+└─sda3          LVM2_member       vrvO7M-wWjm-KyyL-ByhF-gUFj-blT0-K2eXWl 
+  ├─centos-root ext4              be50b5e9-14be-4bfe-9b9c-b66af1c57409   /
+  └─centos-var  xfs               93513c5c-28e8-489e-b913-fa3ba8ea4b62   /var
+sdb                                                                      
+└─sdb1          LVM2_member       xdt4E6-WmDM-gWsB-nbxh-MhdA-X1rm-2ONTHi 
+  ├─centos-swap swap              12876b7f-1d1c-4097-8961-43d583c54313   [SWAP]
+  ├─centos-home xfs               593d60e8-d90a-4751-a00b-af361cf0a11f   /home
+  └─centos-var  xfs               93513c5c-28e8-489e-b913-fa3ba8ea4b62   /var
+sdc                                                                      
+├─sdc1          ext4              04d61fc8-e924-4d86-9ff9-2ebc78b06184   
+├─sdc2                                                                   
+├─sdc3                                                                   
+├─sdc5                                                                   
+└─sdc6                                                                   
+sr0                                                                      
+[root@localhost ~]# 
+
+
+
+3) Смонтировать в них несколько пустых корневых каталогов.
+
+[root@localhost /]# mkfs.ext4 /dev/sdc3 
+mke2fs 1.42.9 (28-Dec-2013)
+mkfs.ext4: inode_size (128) * inodes_count (0) too big for a
+	filesystem with 0 blocks, specify higher inode_ratio (-i)
+	or lower inode count (-N).
+[root@localhost mnt]# mkdir /mnt/media && mount /dev/sdc1 /mnt/media
+[root@localhost mnt]# ls -la /media/
+итого 8
+drwxr-xr-x.  2 root root 4096 апр 11  2018 .
+dr-xr-xr-x. 18 root root 4096 дек 15 17:22 ..
+[root@localhost mnt]# cp -a /media/ /mnt/media/
+[root@localhost mnt]# ls -la /mnt/media/
+итого 28
+drwxr-xr-x. 4 root root  4096 дек 15 21:17 .
+drwxr-xr-x. 4 root root  4096 дек 15 21:16 ..
+drwx------. 2 root root 16384 дек 15 20:22 lost+found
+drwxr-xr-x. 2 root root  4096 апр 11  2018 media
+[root@localhost mnt]# cd /media/
+[root@localhost media]# ls -la
+итого 8
+drwxr-xr-x.  2 root root 4096 апр 11  2018 .
+dr-xr-xr-x. 18 root root 4096 дек 15 17:22 ..
+[root@localhost media]# 
+
+
+
+4)Перенести каталог /home на отдельный раздел
+
+[root@localhost ~]#mkfs.ext4 /dev/sdc2
+[root@localhost ~]# mkdir /mnt/home2 && mount /dev/sdc2 /mnt/home2
+[root@localhost ~]# cp -a /home/user/ /mnt/home2/
+[root@localhost ~]# ls -la /home/user/
+итого 16
+drwx------. 2 user user  83 дек 15 17:24 .
+drwxr-xr-x. 3 root root  18 дек 15 17:22 ..
+-rw-------. 1 user user  28 дек 15 17:24 .bash_history
+-rw-r--r--. 1 user user  18 ноя 24  2021 .bash_logout
+-rw-r--r--. 1 user user 193 ноя 24  2021 .bash_profile
+-rw-r--r--. 1 user user 231 ноя 24  2021 .bashrc
+[root@localhost ~]# ls -la /mnt/home2/user/
+итого 24
+drwx------. 2 user user 4096 дек 15 17:24 .
+drwxr-xr-x. 4 root root 4096 дек 15 20:56 ..
+-rw-------. 1 user user   28 дек 15 17:24 .bash_history
+-rw-r--r--. 1 user user   18 ноя 24  2021 .bash_logout
+-rw-r--r--. 1 user user  193 ноя 24  2021 .bash_profile
+-rw-r--r--. 1 user user  231 ноя 24  2021 .bashrc
+[root@localhost ~]# vi /etc/fstab
+[root@localhost ~]# mount -a
+mount: /dev/sdc2 is already mounted or /home busy
+       /dev/sdc2 is already mounted on /mnt/home2
+[root@localhost ~]# 
+
+
+
+
+5) Установить систему применяя RAID
+
+core@XB-NB:~$ ssh root@localhost -p 2223
+root@localhosts password: 
+Last login: Thu Dec 15 18:33:57 2022 from 10.0.2.2
+[root@localhost ~]# lsblk 
+NAME      MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+sda         8:0    0   20G  0 disk  
+├─sda1      8:1    0    2M  0 part  
+├─sda2      8:2    0   10G  0 part  
+│ └─md126   9:126  0   10G  0 raid1 /
+├─sda3      8:3    0  4,7G  0 part  
+│ └─md125   9:125  0  4,7G  0 raid1 /home
+├─sda4      8:4    0    1K  0 part  
+├─sda5      8:5    0  1,4G  0 part  
+│ └─md124   9:124  0  1,4G  0 raid1 /var
+├─sda6      8:6    0  2,1G  0 part  
+│ └─md127   9:127  0  2,1G  0 raid1 /boot
+└─sda7      8:7    0  1,9G  0 part  [SWAP]
+sdb         8:16   0   20G  0 disk  
+├─sdb1      8:17   0   10G  0 part  
+│ └─md126   9:126  0   10G  0 raid1 /
+├─sdb2      8:18   0  4,7G  0 part  
+│ └─md125   9:125  0  4,7G  0 raid1 /home
+├─sdb3      8:19   0  1,4G  0 part  
+│ └─md124   9:124  0  1,4G  0 raid1 /var
+├─sdb4      8:20   0    1K  0 part  
+└─sdb5      8:21   0  2,1G  0 part  
+  └─md127   9:127  0  2,1G  0 raid1 /boot
+sdc         8:32   0   20G  0 disk  
+sdd         8:48   0   20G  0 disk  
+sde         8:64   0    1G  0 disk  
+sdf         8:80   0    1G  0 disk  
+sr0        11:0    1 1024M  0 rom   
+
+[root@localhost ~]# mdadm --version
+mdadm - v4.1 - 2018-10-01
+[root@localhost ~]#  sfdisk -d /dev/sdc | sfdisk /dev/sdd
+Проверяется, чтобы сейчас никто не использовал этот диск...
+ОК
+
+Диск /dev/sdd: 2610 цилиндров, 255 головок, 63 секторов/дорожку
+sfdisk:  /dev/sdd: нераспознанный тип таблицы разделов
+
+Старая ситуация:
+sfdisk: Разделы не найдены
+
+Новая ситуация:
+sfdisk: Разделы не найдены
+
+sfdisk: no partition table present.
+[root@localhost ~]#  sfdisk -d /dev/sde | sfdisk /dev/sdf
+Проверяется, чтобы сейчас никто не использовал этот диск...
+ОК
+
+Диск /dev/sdf: 130 цилиндров, 255 головок, 63 секторов/дорожку
+sfdisk:  /dev/sdf: нераспознанный тип таблицы разделов
+
+Старая ситуация:
+sfdisk: Разделы не найдены
+
+Новая ситуация:
+sfdisk: Разделы не найдены
+
+sfdisk: no partition table present.
+
+[root@localhost ~]# mdadm --zero-superblock --force /dev/vd{c,d}
+mdadm: Couldn't open /dev/vdc for write - not zeroing
+mdadm: Couldn't open /dev/vdd for write - not zeroing
+[root@localhost ~]# mdadm --zero-superblock --force /dev/vd{e,f}
+mdadm: Couldn't open /dev/vde for write - not zeroing
+mdadm: Couldn't open /dev/vdf for write - not zeroing
+[root@localhost ~]# 
+
+[root@localhost ~]# mdadm --create --verbose /dev/md1 -l 0 -n 2 /dev/sd{c,d}
+mdadm: chunk size defaults to 512K
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md1 started.
+[root@localhost ~]# lsblk 
+NAME      MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+sda         8:0    0   20G  0 disk  
+├─sda1      8:1    0    2M  0 part  
+├─sda2      8:2    0   10G  0 part  
+│ └─md126   9:126  0   10G  0 raid1 /
+├─sda3      8:3    0  4,7G  0 part  
+│ └─md125   9:125  0  4,7G  0 raid1 /home
+├─sda4      8:4    0    1K  0 part  
+├─sda5      8:5    0  1,4G  0 part  
+│ └─md124   9:124  0  1,4G  0 raid1 /var
+├─sda6      8:6    0  2,1G  0 part  
+│ └─md127   9:127  0  2,1G  0 raid1 /boot
+└─sda7      8:7    0  1,9G  0 part  [SWAP]
+sdb         8:16   0   20G  0 disk  
+├─sdb1      8:17   0   10G  0 part  
+│ └─md126   9:126  0   10G  0 raid1 /
+├─sdb2      8:18   0  4,7G  0 part  
+│ └─md125   9:125  0  4,7G  0 raid1 /home
+├─sdb3      8:19   0  1,4G  0 part  
+│ └─md124   9:124  0  1,4G  0 raid1 /var
+├─sdb4      8:20   0    1K  0 part  
+└─sdb5      8:21   0  2,1G  0 part  
+  └─md127   9:127  0  2,1G  0 raid1 /boot
+sdc         8:32   0   20G  0 disk  
+└─md1       9:1    0   40G  0 raid0 
+sdd         8:48   0   20G  0 disk  
+└─md1       9:1    0   40G  0 raid0 
+sde         8:64   0    1G  0 disk  
+sdf         8:80   0    1G  0 disk  
+sr0        11:0    1 1024M  0 rom   
+
+[root@localhost ~]# mdadm --create --verbose /dev/md2 -l 1 -n 2 /dev/sd{e,f}
+mdadm: Note: this array has metadata at the start and
+    may not be suitable as a boot device.  If you plan to
+    store '/boot' on this device please ensure that
+    your boot-loader understands md/v1.x metadata, or use
+    --metadata=0.90
+mdadm: size set to 1046528K
+Continue creating array? y
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md2 started.
+
+[root@localhost ~]# lsblk 
+NAME      MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+sda         8:0    0   20G  0 disk  
+├─sda1      8:1    0    2M  0 part  
+├─sda2      8:2    0   10G  0 part  
+│ └─md126   9:126  0   10G  0 raid1 /
+├─sda3      8:3    0  4,7G  0 part  
+│ └─md125   9:125  0  4,7G  0 raid1 /home
+├─sda4      8:4    0    1K  0 part  
+├─sda5      8:5    0  1,4G  0 part  
+│ └─md124   9:124  0  1,4G  0 raid1 /var
+├─sda6      8:6    0  2,1G  0 part  
+│ └─md127   9:127  0  2,1G  0 raid1 /boot
+└─sda7      8:7    0  1,9G  0 part  [SWAP]
+sdb         8:16   0   20G  0 disk  
+├─sdb1      8:17   0   10G  0 part  
+│ └─md126   9:126  0   10G  0 raid1 /
+├─sdb2      8:18   0  4,7G  0 part  
+│ └─md125   9:125  0  4,7G  0 raid1 /home
+├─sdb3      8:19   0  1,4G  0 part  
+│ └─md124   9:124  0  1,4G  0 raid1 /var
+├─sdb4      8:20   0    1K  0 part  
+└─sdb5      8:21   0  2,1G  0 part  
+  └─md127   9:127  0  2,1G  0 raid1 /boot
+sdc         8:32   0   20G  0 disk  
+└─md1       9:1    0   40G  0 raid0 
+sdd         8:48   0   20G  0 disk  
+└─md1       9:1    0   40G  0 raid0 
+sde         8:64   0    1G  0 disk  
+└─md2       9:2    0 1022M  0 raid1 
+sdf         8:80   0    1G  0 disk  
+└─md2       9:2    0 1022M  0 raid1 
+sr0        11:0    1 1024M  0 rom   
+[root@localhost ~]# mkfs.ext4 /dev/md1
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=128 blocks, Stripe width=256 blocks
+2621440 inodes, 10477056 blocks
+523852 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=2157969408
+320 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks: 
+	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, 
+	4096000, 7962624
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done   
+
+[root@localhost ~]# mkfs.ext4 /dev/md2
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+65408 inodes, 261632 blocks
+13081 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=268435456
+8 block groups
+32768 blocks per group, 32768 fragments per group
+8176 inodes per group
+Superblock backups stored on blocks: 
+	32768, 98304, 163840, 229376
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+[root@localhost ~]# mkdir /test0
+[root@localhost ~]# mkdir /test1
+[root@localhost ~]# mount /dev/md1 /test0/
+[root@localhost ~]# mount /dev/md2 /test1/
+[root@localhost ~]# cat  /var/log/boot.log > text1.txt 
+[root@localhost ~]# cat  /var/log/secure > text2.txt 
+
+[root@localhost ~]# cp text* /test0/
+[root@localhost ~]# ls -la /test0/
+итого 48
+drwxr-xr-x.  3 root root  4096 дек 15 23:12 .
+dr-xr-xr-x. 21 root root  4096 дек 15 23:12 ..
+drwx------.  2 root root 16384 дек 15 23:00 lost+found
+-rw-r--r--.  1 root root 20120 дек 15 23:12 text1.txt
+-rw-r--r--.  1 root root  2428 дек 15 23:12 text2.text
+[root@localhost ~]# cp text* /test1/
+[root@localhost ~]# ls -la /test1/
+итого 48
+drwxr-xr-x.  3 root root  4096 дек 15 23:13 .
+dr-xr-xr-x. 21 root root  4096 дек 15 23:12 ..
+drwx------.  2 root root 16384 дек 15 23:01 lost+found
+-rw-r--r--.  1 root root 20120 дек 15 23:13 text1.txt
+-rw-r--r--.  1 root root  2428 дек 15 23:13 text2.txt
+[root@localhost ~]# 
+
+[root@localhost mnt]# mount /dev/md1 /test0/
+mount: /dev/md1: cant read superblock
+[root@localhost mnt]# mount /dev/md2 /test1/
+[root@localhost mnt]# cd /
+[root@localhost /]# ls -la
+итого 80
+dr-xr-xr-x.  21 root root  4096 дек 15 23:12 .
+dr-xr-xr-x.  21 root root  4096 дек 15 23:12 ..
+lrwxrwxrwx.   1 root root     7 дек 15 18:21 bin -> usr/bin
+dr-xr-xr-x.   6 root root  4096 дек 15 18:25 boot
+drwxr-xr-x.  20 root root  3500 дек 15 23:15 dev
+drwxr-xr-x.  74 root root  4096 дек 15 18:25 etc
+drwxr-xr-x.   4 root root  4096 дек 15 18:24 home
+lrwxrwxrwx.   1 root root     7 дек 15 18:21 lib -> usr/lib
+lrwxrwxrwx.   1 root root     9 дек 15 18:21 lib64 -> usr/lib64
+drwx------.   2 root root 16384 дек 15 18:21 lost+found
+drwxr-xr-x.   2 root root  4096 апр 11  2018 media
+drwxr-xr-x.   2 root root  4096 апр 11  2018 mnt
+drwxr-xr-x.   2 root root  4096 апр 11  2018 opt
+dr-xr-xr-x. 128 root root     0 дек 15 23:14 proc
+dr-xr-x---.   2 root root  4096 дек 15 23:08 root
+drwxr-xr-x.  24 root root   640 дек 15 23:14 run
+lrwxrwxrwx.   1 root root     8 дек 15 18:21 sbin -> usr/sbin
+drwxr-xr-x.   2 root root  4096 апр 11  2018 srv
+dr-xr-xr-x.  13 root root     0 дек 15 23:14 sys
+drwxr-xr-x.   2 root root  4096 дек 15 23:02 test
+drwxr-xr-x.   2 root root  4096 дек 15 23:06 test0
+drwxr-xr-x.   3 root root  4096 дек 15 23:13 test1
+drwxrwxrwt.   8 root root  4096 дек 15 23:15 tmp
+drwxr-xr-x.  13 root root  4096 дек 15 18:21 usr
+drwxr-xr-x.  20 root root  4096 дек 15 18:25 var
+[root@localhost /]# ls -la test1
+итого 48
+drwxr-xr-x.  3 root root  4096 дек 15 23:13 .
+dr-xr-xr-x. 21 root root  4096 дек 15 23:12 ..
+drwx------.  2 root root 16384 дек 15 23:01 lost+found
+-rw-r--r--.  1 root root 20120 дек 15 23:13 text1.txt
+-rw-r--r--.  1 root root  2428 дек 15 23:13 text2.txt
+[root@localhost /]# ls -la test0/
+итого 8
+drwxr-xr-x.  2 root root 4096 дек 15 23:06 .
+dr-xr-xr-x. 21 root root 4096 дек 15 23:12 ..
+[root@localhost test1]# cat test1/text2.txt 
+Dec 15 18:25:40 localhost polkitd[747]: Loading rules from directory /etc/polkit-1/rules.d
+Dec 15 18:25:40 localhost polkitd[747]: Loading rules from directory /usr/share/polkit-1/rules.d
+Dec 15 18:25:40 localhost polkitd[747]: Finished loading, compiling and executing 2 rules
+Dec 15 18:25:40 localhost polkitd[747]: Acquired the name org.freedesktop.PolicyKit1 on the system bus
+Dec 15 18:25:41 localhost sshd[1065]: Server listening on 0.0.0.0 port 22.
+Dec 15 18:25:41 localhost sshd[1065]: Server listening on :: port 22.
+Dec 15 18:27:29 localhost login: pam_unix(login:session): session opened for user root by LOGIN(uid=0)
+Dec 15 18:27:29 localhost login: ROOT LOGIN ON tty1
+Dec 15 18:32:44 localhost polkitd[747]: Registered Authentication Agent for unix-process:8131:42731 (system bus name :1.17 [/usr/bin/pkttyagent --notify-fd 5 --fallback], object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale ru_RU.UTF-8)
+Dec 15 18:32:45 localhost polkitd[747]: Unregistered Authentication Agent for unix-process:8131:42731 (system bus name :1.17, object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale ru_RU.UTF-8) (disconnected from bus)
+Dec 15 18:33:57 localhost sshd[8530]: Accepted password for root from 10.0.2.2 port 41034 ssh2
+Dec 15 18:33:57 localhost sshd[8530]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Dec 15 21:18:33 localhost polkitd[747]: Registered Authentication Agent for unix-process:16634:1037676 (system bus name :1.47 [/usr/bin/pkttyagent --notify-fd 5 --fallback], object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale ru_RU.UTF-8)
+Dec 15 22:49:58 localhost polkitd[750]: Loading rules from directory /etc/polkit-1/rules.d
+Dec 15 22:49:58 localhost polkitd[750]: Loading rules from directory /usr/share/polkit-1/rules.d
+Dec 15 22:49:58 localhost polkitd[750]: Finished loading, compiling and executing 2 rules
+Dec 15 22:49:58 localhost polkitd[750]: Acquired the name org.freedesktop.PolicyKit1 on the system bus
+Dec 15 22:49:59 localhost sshd[1098]: Server listening on 0.0.0.0 port 22.
+Dec 15 22:49:59 localhost sshd[1098]: Server listening on :: port 22.
+Dec 15 22:50:09 localhost sshd[1608]: Connection closed by 10.0.2.2 port 39822 [preauth]
+Dec 15 22:50:16 localhost sshd[1606]: Accepted password for root from 10.0.2.2 port 35008 ssh2
+Dec 15 22:50:17 localhost sshd[1606]: pam_unix(sshd:session): session opened for user root by (uid=0)
+[root@localhost test1]# 
+
+
+
+6) Написать отличие двух команд adduser vs useradd
+
+Данные команды создают нового пользователя в системе, но делают это по разному.
+
+Adduser - добавляет пользователей в систему, создает домашний каталог, 
+копирует файлы по умолчанию в домашний каталог, запрашивает пароль для нового пользователя и
+с доп. информацию о пользователе (Full Name []: Room Number []: Work Phone []: Home Phone []: 
+Other []: )
+
+Useradd - низкоуровневая утилита для добавления пользователей. Создает пользователя без доп. настроек. 
+(без пароля, домашнего каталога)
+
+
+
+
+7) Создать пользователя, добавить его в группу, 
+создать папку и разрешить доступ к этой папке только этой группе
+
+-Создание пользователя
+
+Last login: Tue Dec 13 15:04:45 2022 from 10.0.2.2
+vagrant@ubuntu2204:~$
+vagrant@ubuntu2204:~$ sudo adduser test
+Adding user test' ... Adding new group test' (1001) ...
+Adding new user test' (1001) with group test' ...
+Creating home directory /home/test' ... Copying files from /etc/skel' ...
+New password:
+Retype new password:
+passwd: password updated successfully
+Changing the user information for test
+Enter the new value, or press ENTER for the default
+Full Name []:
+Room Number []:
+Work Phone []:
+Home Phone []:
+Other []:
+Is the information correct? [Y/n] y
+vagrant@ubuntu2204:~$
+
+-Добавление в группу
+
+vagrant@ubuntu2204:~$ sudo groupadd gr_test
+vagrant@ubuntu2204:~$ sudo usermod -aG gr_test test
+vagrant@ubuntu2204:~$ tail /etc/group
+==> /etc/group <==
+tcpdump:x:115:
+tss:x:116:
+landscape:x:117:
+vagrant:x:1000:
+fwupd-refresh:x:118:
+plocate:x:119:
+netdev:x:120:
+vboxsf:x:121:
+test:x:1001:
+gr_test:x:1002:test
+vagrant@ubuntu2204:~$ mkdir test_dir
+vagrant@ubuntu2204:~$ ls -la
+total 40
+drwxr-x--- 5 vagrant vagrant 4096 Dec 14 13:38 .
+drwxr-xr-x 4 root    root    4096 Dec 14 09:23 ..
+-rw------- 1 vagrant vagrant   45 Dec 14 12:59 .bash_history
+-rw-r--r-- 1 vagrant vagrant  220 Jan  6  2022 .bash_logout
+-rw-r--r-- 1 vagrant vagrant 3775 Nov 19 20:24 .bashrc
+drwxr-xr-x 2 vagrant vagrant 4096 Nov 19 20:24 .cache
+-rw-r--r-- 1 vagrant vagrant  807 Jan  6  2022 .profile
+drwx------ 2 vagrant vagrant 4096 Dec 13 15:04 .ssh
+-rw-r--r-- 1 vagrant vagrant   13 Nov 19 20:24 .vimrc
+drwxrwxr-x 2 vagrant vagrant 4096 Dec 14 13:38 test_dir
+vagrant@ubuntu2204:~$ 
+
+vagrant@ubuntu2204:~$ sudo chown -R test:gr_test test_dir/
+vagrant@ubuntu2204:~$ ls -la
+total 40
+drwxr-x--- 5 vagrant vagrant 4096 Dec 14 13:38 .
+drwxr-xr-x 4 root    root    4096 Dec 14 09:23 ..
+-rw------- 1 vagrant vagrant   45 Dec 14 12:59 .bash_history
+-rw-r--r-- 1 vagrant vagrant  220 Jan  6  2022 .bash_logout
+-rw-r--r-- 1 vagrant vagrant 3775 Nov 19 20:24 .bashrc
+drwxr-xr-x 2 vagrant vagrant 4096 Nov 19 20:24 .cache
+-rw-r--r-- 1 vagrant vagrant  807 Jan  6  2022 .profile
+drwx------ 2 vagrant vagrant 4096 Dec 13 15:04 .ssh
+-rw-r--r-- 1 vagrant vagrant   13 Nov 19 20:24 .vimrc
+drwxrwxr-x 2 test    gr_test 4096 Dec 14 13:38 test_dir
+vagrant@ubuntu2204:~$ 
+
+
+

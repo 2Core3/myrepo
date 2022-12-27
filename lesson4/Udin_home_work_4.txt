@@ -1,0 +1,904 @@
+1) С помощью vagrant развернуть две виртуальные машины
+
+Ubuntu 22
+
+core@XB-NB:~/vagrant_vm/ubuntu$ vagrant up
+Bringing machine 'default' up with 'virtualbox' provider...
+==> default: Importing base box 'generic/ubuntu2204'...
+==> default: Matching MAC address for NAT networking...
+==> default: Checking if box 'generic/ubuntu2204' version '4.2.6' is up to date...
+==> default: Setting the name of the VM: ubuntu_default_1671183075162_71501
+==> default: Clearing any previously set network interfaces...
+==> default: Preparing network interfaces based on configuration...
+    default: Adapter 1: nat
+==> default: Forwarding ports...
+    default: 22 (guest) => 2222 (host) (adapter 1)
+==> default: Running 'pre-boot' VM customizations...
+==> default: Booting VM...
+==> default: Waiting for machine to boot. This may take a few minutes...
+    default: SSH address: 127.0.0.1:2222
+    default: SSH username: vagrant
+    default: SSH auth method: private key
+    default: 
+    default: Vagrant insecure key detected. Vagrant will automatically replace
+    default: this with a newly generated keypair for better security.
+    default: 
+    default: Inserting generated public key within guest...
+    default: Removing insecure key from the guest if it's present...
+    default: Key inserted! Disconnecting and reconnecting using new SSH key...
+==> default: Machine booted and ready!
+==> default: Checking for guest additions in VM...
+    default: The guest additions on this VM do not match the installed version of
+    default: VirtualBox! In most cases this is fine, but in rare cases it can
+    default: prevent things such as shared folders from working properly. If you see
+    default: shared folder errors, please make sure the guest additions within the
+    default: virtual machine match the version of VirtualBox you have installed on
+    default: your host and reload your VM.
+    default: 
+    default: Guest Additions Version: 6.1.38
+    default: VirtualBox Version: 7.0
+core@XB-NB:~/vagrant_vm/ubuntu$ 
+
+
+
+
+CentOS 8
+
+core@XB-NB:~$ cd vagrant_vm/centos8/
+core@XB-NB:~/vagrant_vm/centos8$ vagrant up
+Bringing machine 'default' up with 'virtualbox' provider...
+==> default: Importing base box 'generic/centos8'...
+==> default: Matching MAC address for NAT networking...
+==> default: Checking if box 'generic/centos8' version '4.2.2' is up to date...
+==> default: A newer version of the box 'generic/centos8' for provider 'virtualbox' is
+==> default: available! You currently have version '4.2.2'. The latest is version
+==> default: '4.2.6'. Run `vagrant box update` to update.
+==> default: Setting the name of the VM: centos8_default_1671183288549_63251
+==> default: Fixed port collision for 22 => 2222. Now on port 2200.
+==> default: Clearing any previously set network interfaces...
+==> default: Preparing network interfaces based on configuration...
+    default: Adapter 1: nat
+==> default: Forwarding ports...
+    default: 22 (guest) => 2200 (host) (adapter 1)
+==> default: Running 'pre-boot' VM customizations...
+==> default: Booting VM...
+==> default: Waiting for machine to boot. This may take a few minutes...
+    default: SSH address: 127.0.0.1:2200
+    default: SSH username: vagrant
+    default: SSH auth method: private key
+    default: 
+    default: Vagrant insecure key detected. Vagrant will automatically replace
+    default: this with a newly generated keypair for better security.
+    default: 
+    default: Inserting generated public key within guest...
+    default: Removing insecure key from the guest if it's present...
+    default: Key inserted! Disconnecting and reconnecting using new SSH key...
+==> default: Machine booted and ready!
+==> default: Checking for guest additions in VM...
+    default: The guest additions on this VM do not match the installed version of
+    default: VirtualBox! In most cases this is fine, but in rare cases it can
+    default: prevent things such as shared folders from working properly. If you see
+    default: shared folder errors, please make sure the guest additions within the
+    default: virtual machine match the version of VirtualBox you have installed on
+    default: your host and reload your VM.
+    default: 
+    default: Guest Additions Version: 6.1.30
+    default: VirtualBox Version: 7.0
+core@XB-NB:~/vagrant_vm/centos8$ vagrant ssh
+
+
+2) Настроить ssh сервер на каждой машине с возможностью подключения по паролю и ключу
+
+ Ubuntu
+
+vagrant@ubuntu2204:~$ ssh-keygen 
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/vagrant/.ssh/id_rsa):      	
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/vagrant/.ssh/id_rsa
+Your public key has been saved in /home/vagrant/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:TBND/ysZLWWaoGmvbQEkdHlPePy8ILMZhYwoVq/E508 vagrant@ubuntu2204.localdomain
+The key's randomart image is:
++---[RSA 3072]----+
+|   oo..=++       |
+|  o.oo+ =+=      |
+| . .ooo.+=.oo    |
+|   . +.=+ooBo    |
+|    . =.E*=.o.   |
+|     . ++  +..   |
+|        o.o .    |
+|       o.  .     |
+|      ...        |
++----[SHA256]-----+
+
+core@XB-NB:~$ ssh vagrant@localhost -p 2227
+vagrant@localhost's password: 
+Last login: Fri Dec 16 13:53:28 2022 from 10.0.2.2
+vagrant@ubuntu2204:~$ 
+
+vagrant@ubuntu2204:~$ sudo vim /etc/ssh/sshd_config
+vagrant@ubuntu2204:~$ systemctl restart sshd
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
+Authentication is required to restart 'ssh.service'.
+Authenticating as: root
+Password: 
+vagrant@ubuntu2204:~$ sudo !!
+sudo systemctl restart sshd
+
+Логин\пароль
+
+core@XB-NB:~/vagrant_vm/ubuntu$ ssh vagrant@192.168.56.102
+vagrant@192.168.56.102's password: 
+Last login: Mon Dec 19 09:43:16 2022 from 192.168.56.101
+vagrant@ubuntu2204:~$ 
+
+Ключ
+
+core@XB-NB:~/.ssh$ ssh-copy-id vagrant@192.168.56.102
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+vagrant@192.168.56.102's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'vagrant@192.168.56.102'"
+and check to make sure that only the key(s) you wanted were added.
+
+core@XB-NB:~/.ssh$ ssh vagrant@192.168.56.102
+Last login: Mon Dec 19 10:41:25 2022 from 192.168.56.1
+vagrant@ubuntu2204:~$ exit
+logout
+
+
+CentOS
+
+
+[vagrant@centos8 .ssh]$ ssh-keygen 
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/vagrant/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/vagrant/.ssh/id_rsa.
+Your public key has been saved in /home/vagrant/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:tIofVqnnFR+wD9QyzhySsSQirdWIO4f5f5tmR6S57iA vagrant@centos8.localdomain
+The key's randomart image is:
++---[RSA 3072]----+
+|  .o.o. o        |
+|  ..+..o + .     |
+|   *    = * .    |
+|  * .  . O.*     |
+|   +    S+B .    |
+|    .. +o .= .   |
+|    E.* .o. o    |
+|     +.==o.      |
+|      .**o       |
++----[SHA256]-----+
+[vagrant@centos8 .ssh]$ 
+[vagrant@centos8 .ssh]$ ls -la
+total 16
+drwx------. 2 vagrant vagrant   80 Dec 19 11:05 .
+drwx------. 3 vagrant vagrant  124 Dec 16 09:37 ..
+-rw-------. 1 vagrant vagrant  389 Dec 16 09:35 authorized_keys
+-rw-------. 1 vagrant vagrant 2622 Dec 19 11:05 id_rsa
+-rw-r--r--. 1 vagrant vagrant  581 Dec 19 11:05 id_rsa.pub
+-rw-r--r--. 1 vagrant vagrant  176 Dec 19 09:43 known_hosts
+[vagrant@centos8 .ssh]$ chmod -R go= ~/.ssh
+[vagrant@centos8 .ssh]$ vim /etc/ssh/sshd_config 
+[vagrant@centos8 .ssh]$ sudo !!
+sudo vim /etc/ssh/sshd_config 
+[vagrant@centos8 .ssh]$ sudo systemctl restart sshd
+[vagrant@centos8 .ssh]$ 
+
+
+core@XB-NB:~$ ssh-copy-id vagrant@192.168.56.101
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+vagrant@192.168.56.101's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'vagrant@192.168.56.101'"
+and check to make sure that only the key(s) you wanted were added.
+
+core@XB-NB:~$ ssh vagrant@192.168.56.101  
+Last login: Fri Dec 16 14:34:08 2022 from 10.0.2.2
+[vagrant@centos8 ~]$ 
+
+
+
+3) Установить  Git  своём ПК 
+
+core@XB-NB:~$ git --version
+git version 2.34.1
+
+
+
+4)  В приложении Git Bash сгенерить ключ ssh и распространить его на виртуальные машины из командной 
+строки  Git Bash. Проверить подключение по ключу из командной строки Git Bash
+
+User@DESKTOP-NV6RD8G MINGW64 ~
+$ ssh-keygen.exe
+Generating public/private rsa key pair.
+Enter file in which to save the key (/c/Users/User/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /c/Users/User/.ssh/id_rsa
+Your public key has been saved in /c/Users/User/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:cp+SrYfCF21eQimqoIFCPiv9bGUaT/tS/QSEAbR54GY User@DESKTOP-NV6RD8G
+The key's randomart image is:
++---[RSA 3072]----+
+|     .+..o       |
+|     . +. .      |
+|      E .. .     |
+| .   o .. +      |
+|+     ..S= .     |
+|+o. . =oo+=.o    |
+|.+o. X oo=+=     |
+|o...+ * ooo .    |
+|.  oo  =o.       |
++----[SHA256]-----+
+
+User@DESKTOP-NV6RD8G MINGW64 ~
+$ ssh-copy-id vagrant@192.168.56.101
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/c/Users/User/.ssh/id_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+vagrant@192.168.56.101's password:
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'vagrant@192.168.56.101'"
+and check to make sure that only the key(s) you wanted were added.
+
+
+User@DESKTOP-NV6RD8G MINGW64 ~
+$ ssh vagrant@192.168.56.101
+Last login: Mon Dec 19 12:09:28 2022 from 192.168.56.103
+[vagrant@centos8 ~]$ 
+
+
+5) Настроить доступ по SSH-ключам виртуальных машин друг к другу.
+
+
+[vagrant@centos8 .ssh]$ ssh-copy-id vagrant@192.168.56.102
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/vagrant/.ssh/id_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+vagrant@192.168.56.102's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'vagrant@192.168.56.102'"
+and check to make sure that only the key(s) you wanted were added.
+
+[vagrant@centos8 .ssh]$ ssh vagrant@192.168.56.102
+Last login: Mon Dec 19 10:42:54 2022 from 192.168.56.1
+vagrant@ubuntu2204:~$ 
+
+
+
+vagrant@ubuntu2204:~/.ssh$  ssh-copy-id vagrant@192.168.56.101
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/vagrant/.ssh/id_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+vagrant@192.168.56.101's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'vagrant@192.168.56.101'"
+and check to make sure that only the key(s) you wanted were added.
+
+vagrant@ubuntu2204:~/.ssh$ ssh vagrant@192.168.56.101
+Last login: Mon Dec 19 11:08:22 2022 from 192.168.56.1
+[vagrant@centos8 ~]$ 
+
+
+6) Создать Bash-скрипт в домашней директории, собирающий данные о количестве свободной памяти, 
+текущей загрузке процессора, ip-адрес, вывести в формате “Ключ: значение”, причём все ключи заменить 
+на русские названия, например что бы вместо “Mem 1024Mb” получалось “Память 1024Mb”, 
+для приведения к нужному формату использовать grep, sed и awk.
+
+vagrant@ubuntu2204:~/bash$ vim script2.sh
+vagrant@ubuntu2204:~/bash$ cat script2.sh 
+#!/bin/bash
+echo "____________________________"
+
+date
+
+free -h | egrep 'Mem:|Swap:'  |awk '{print $1,$4}' | sed -e 's/Mem:/Память:/g' -e 's/Swap:/Свап:/g'
+
+mpstat | egrep 'all' | awk '{print $2,$12}' | sed 's/all/Свободные ресурсы CPU:/g'
+
+ip addr | egrep 'inet ' | awk '{print $1,$2}' | sed 's/inet /IP-адрес: /g'
+
+#sed -e 's/Mem:/Память:/g' -e 's/Swap:/Свап:/g' -e 's/all/Свободные ресурсы CPU:/g' -e 's/inet /IP-адрес: /g'
+vagrant@ubuntu2204:~/bash$ 
+
+vagrant@ubuntu2204:~/bash$ ./script2.sh 
+____________________________
+Mon Dec 19 21:26:37 UTC 2022
+Память: 1.2Gi
+Свап: 2.0Gi
+Свободные ресурсы CPU: 99.82
+IP-адрес: 127.0.0.1/8
+IP-адрес: 10.0.2.15/24
+IP-адрес: 192.168.56.102/24
+vagrant@ubuntu2204:~/bash$ 
+
+
+
+7) Сделать так, чтобы скрипт из п6 запускался при входе.
+
+vagrant@ubuntu2204:~$ echo /home/vagrant/bash/script2.sh >>.bashrc 
+vagrant@ubuntu2204:~$ exit
+logout
+Connection to 192.168.56.102 closed.
+core@XB-NB:~$ ssh vagrant@192.168.56.102
+Last login: Tue Dec 20 10:34:20 2022 from 192.168.56.1
+____________________________
+Память: 1.4Gi
+Свап: 2.0Gi
+Свободные ресурсы CPU: 99.76
+IP-адрес: 127.0.0.1/8
+IP-адрес: 10.0.2.15/24
+IP-адрес: 192.168.56.102/24
+vagrant@ubuntu2204:~$ 
+
+
+8) Скопировать скрипт на другую ВМ с помощью scp, также настроить запуск скрипта при входе.
+
+[vagrant@centos8 ~]$ scp vagrant@192.168.56.102:/home/vagrant/bash/script2.sh /home/vagrant
+script2.sh                   100%  500   478.1KB/s   00:00    
+[vagrant@centos8 ~]$ 
+[vagrant@centos8 ~]$ echo /home/vagrant/script2.sh >> .bashrc
+[vagrant@centos8 ~]$ exit
+logout
+Connection to 192.168.56.101 closed.
+core@XB-NB:~$ ssh vagrant@192.168.56.101
+Last login: Tue Dec 20 10:39:13 2022 from 192.168.56.1
+____________________________
+/home/vagrant/script2.sh: line 4: /home/vagrant/bash/top.txt: No such file or directory
+Память: 1.3Gi
+Свап: 2.1Gi
+Свободные ресурсы CPU: 99.75
+IP-адрес: 127.0.0.1/8
+IP-адрес: 10.0.2.15/24
+IP-адрес: 192.168.56.101/24
+[vagrant@centos8 ~]$ 
+
+
+
+
+9) Создать пользователя user1 и предоставить ему доступ к скрипту в чужой дом. папке,
+ разрешить чтение и запуск, используя chmod.
+
+vagrant@ubuntu2204:~/bash$ ls -la
+total 20
+drwxrwxr-x 2 vagrant vagrant 4096 Dec 20 10:12 .
+drwxr-x--- 6 vagrant vagrant 4096 Dec 20 10:35 ..
+-rwxrwxr-x 1 vagrant vagrant  519 Dec 20 10:12 script2.sh
+-rw-rw-r-- 1 vagrant vagrant   29 Dec 20 10:36 top.txt
+vagrant@ubuntu2204:~/bash$ 
+
+ root@ubuntu2204:~# adduser user1
+Adding user `user1' ...
+Adding new group `user1' (1001) ...
+Adding new user `user1' (1001) with group `user1' ...
+Creating home directory `/home/user1' ...
+Copying files from `/etc/skel' ...
+New password: 
+Retype new password: 
+passwd: password updated successfully
+Changing the user information for user1
+Enter the new value, or press ENTER for the default
+	Full Name []: 
+	Room Number []: 
+	Work Phone []: 
+	Home Phone []: 
+	Other []: 
+Is the information correct? [Y/n] y
+root@ubuntu2204:~# 
+
+vagrant@ubuntu2204:/home$ ls -la
+total 16
+drwxr-xr-x  4 root    root    4096 Dec 20 10:46 .
+drwxr-xr-x 19 root    root    4096 Dec 20 08:00 ..
+drwxr-x---  2 user1   user1   4096 Dec 20 11:09 user1
+drwxrw-rwx  6 vagrant vagrant 4096 Dec 20 11:21 vagrant
+vagrant@ubuntu2204:/home$ sudo chmod 767 -R vagrant/
+vagrant@ubuntu2204:/home$ 
+root@ubuntu2204:~# su user1
+user1@ubuntu2204:/root$ 
+user1@ubuntu2204:/root$ /home/vagrant/bash/script2.sh
+____________________________
+Память: 1.4Gi
+Свап: 2.0Gi
+Свободные ресурсы CPU: 99.82
+IP-адрес: 127.0.0.1/8
+IP-адрес: 10.0.2.15/24
+IP-адрес: 192.168.56.102/24
+user1@ubuntu2204:/root$ 
+
+
+
+10) На centOS скачать “” с помощью wget. Развернуть локальный репозиторий с данным пакетом,
+ подключить репозиторий на ВМ, установить pros через “yum install procs” из своего локального репозитория.
+
+[vagrant@centos8 ~]$ wget https://github.com/dalance/procs/releases/download/v0.13.3/procs-0.13.3-1.x86_64.rpm
+--2022-12-20 11:33:18--  https://github.com/dalance/procs/releases/download/v0.13.3/procs-0.13.3-1.x86_64.rpm
+Resolving github.com (github.com)... 140.82.121.3
+Connecting to github.com (github.com)|140.82.121.3|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://objects.githubusercontent.com/github-production-release-asset-2e65be/167957539/e79317b6-ed4c-4318-b00e-41f8890c7bbe?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20221220%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221220T114430Z&X-Amz-Expires=300&X-Amz-Signature=04bffeae12d21c7156a94ce3b244779505188f87a0ecdfec75b3f18cbc6c8346&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=167957539&response-content-disposition=attachment%3B%20filename%3Dprocs-0.13.3-1.x86_64.rpm&response-content-type=application%2Foctet-stream [following]
+--2022-12-20 11:33:19--  https://objects.githubusercontent.com/github-production-release-asset-2e65be/167957539/e79317b6-ed4c-4318-b00e-41f8890c7bbe?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20221220%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221220T114430Z&X-Amz-Expires=300&X-Amz-Signature=04bffeae12d21c7156a94ce3b244779505188f87a0ecdfec75b3f18cbc6c8346&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=167957539&response-content-disposition=attachment%3B%20filename%3Dprocs-0.13.3-1.x86_64.rpm&response-content-type=application%2Foctet-stream
+Resolving objects.githubusercontent.com (objects.githubusercontent.com)... 185.199.108.133, 185.199.109.133, 185.199.110.133, ...
+Connecting to objects.githubusercontent.com (objects.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2111316 (2.0M) [application/octet-stream]
+Saving to: 'procs-0.13.3-1.x86_64.rpm'
+
+procs-0.13.3-1. 100%[======>]   2.01M  8.09MB/s    in 0.2s    
+
+2022-12-20 11:33:20 (8.09 MB/s) - 'procs-0.13.3-1.x86_64.rpm' saved [2111316/2111316]
+
+[vagrant@centos8 ~]$ ls
+2222.  default:  procs-0.13.3-1.x86_64.rpm  script2.sh
+[vagrant@centos8 ~]$ sudo yum install createrepo yum-utils
+Failed to set locale, defaulting to C.UTF-8
+CentOS Linux 8 - AppStream     5.3 kB/s | 4.3 kB     00:00    
+CentOS Linux 8 - BaseOS        6.2 kB/s | 3.9 kB     00:00    
+CentOS Linux 8 - Extras        2.4 kB/s | 1.5 kB     00:00    
+Extra Packages for Enterprise   16 kB/s |  28 kB     00:01    
+Package yum-utils-4.0.21-3.el8.noarch is already installed.
+Dependencies resolved.
+===============================================================
+ Package             Arch     Version        Repository   Size
+===============================================================
+Installing:
+ createrepo_c        x86_64   0.17.2-3.el8   appstream    88 k
+Installing dependencies:
+ createrepo_c-libs   x86_64   0.17.2-3.el8   appstream   115 k
+ drpm                x86_64   0.4.1-3.el8    appstream    68 k
+
+Transaction Summary
+===============================================================
+Install  3 Packages
+
+Total download size: 271 k
+Installed size: 575 k
+Is this ok [y/N]: y
+Downloading Packages:
+(1/3): drpm-0.4.1-3.el8.x86_64  87 kB/s |  68 kB     00:00    
+(2/3): createrepo_c-0.17.2-3.e 112 kB/s |  88 kB     00:00    
+(3/3): createrepo_c-libs-0.17. 142 kB/s | 115 kB     00:00    
+---------------------------------------------------------------
+Total                          333 kB/s | 271 kB     00:00     
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                       1/1 
+  Installing       : drpm-0.4.1-3.el8.x86_64               1/3 
+  Installing       : createrepo_c-libs-0.17.2-3.el8.x86_   2/3 
+  Installing       : createrepo_c-0.17.2-3.el8.x86_64      3/3 
+  Running scriptlet: createrepo_c-0.17.2-3.el8.x86_64      3/3 
+  Verifying        : createrepo_c-0.17.2-3.el8.x86_64      1/3 
+  Verifying        : createrepo_c-libs-0.17.2-3.el8.x86_   2/3 
+  Verifying        : drpm-0.4.1-3.el8.x86_64               3/3 
+
+Installed:
+  createrepo_c-0.17.2-3.el8.x86_64                             
+  createrepo_c-libs-0.17.2-3.el8.x86_64                        
+  drpm-0.4.1-3.el8.x86_64                                      
+
+Complete!
+[vagrant@centos8 ~]$ 
+
+[vagrant@centos8 ~]$ sudo mkdir /usr/share/repo
+[vagrant@centos8 ~]$ cd /usr/share/repo/
+[vagrant@centos8 ~]$ mv procs-0.13.3-1.x86_64.rpm /usr/share/repo/
+mv: cannot move 'procs-0.13.3-1.x86_64.rpm' to '/usr/share/repo/procs-0.13.3-1.x86_64.rpm': Permission denied
+[vagrant@centos8 ~]$ sudo !!
+sudo mv procs-0.13.3-1.x86_64.rpm /usr/share/repo/
+[vagrant@centos8 ~]$ cd /usr/share/repo/
+[vagrant@centos8 repo]$ 
+[vagrant@centos8 repo]$ ls
+procs-0.13.3-1.x86_64.rpm
+[vagrant@centos8 repo]$ sudo createrepo -v  /usr/share/repo/
+11:44:09: Version: 0.17.2 (Features: DeltaRPM LegacyWeakdeps )
+11:44:09: Signal handler setup
+11:44:09: Thread pool ready
+Directory walk started
+11:44:09: Adding pkg: /usr/share/repo/procs-0.13.3-1.x86_64.rpm
+11:44:09: Dir to scan: /usr/share/repo/.repodata
+11:44:09: Package count: 1
+Directory walk done - 1 packages
+Temporary output repo path: /usr/share/repo/.repodata/
+11:44:09: Creating .xml.gz files
+11:44:09: Setting number of packages
+Preparing sqlite DBs
+11:44:09: Creating databases
+11:44:09: Thread pool user data ready
+Pool started (with 5 workers)
+Pool finished
+11:44:09: Generating repomd.xml
+11:44:09: Old repodata doesn't exists: Cannot rename /usr/share/repo/repodata/ -> /usr/share/repo/repodata.old.24707.20221220114409.225252: No such file or directory
+11:44:09: Renamed /usr/share/repo/.repodata/ -> /usr/share/repo/repodata/
+11:44:09: Memory cleanup
+11:44:09: All done
+[vagrant@centos8 repo]$ vim /etc/yum.repos.d/local.repo
+[vagrant@centos8 repo]$ sudo !!
+sudo vim /etc/yum.repos.d/local.repo
+[vagrant@centos8 repo]$ cat /etc/yum.repos.d/local.repo 
+[localrepo]
+name=localRepo
+baseurl=file:///usr/share/repo/
+gpgcheck=0
+enabled=1
+[vagrant@centos8 repo]$ sudo chmod 664 /etc/yum.repos.d/local.repo 
+[vagrant@centos8 repo]$ yum makecache 
+Failed to set locale, defaulting to C.UTF-8
+CentOS Linux 8 - AppStream     3.4 MB/s | 8.4 MB     00:02    
+CentOS Linux 8 - BaseOS        2.7 MB/s | 4.6 MB     00:01    
+CentOS Linux 8 - Extras        8.0 kB/s |  10 kB     00:01    
+Extra Packages for Enterprise  3.9 MB/s |  13 MB     00:03    
+localRepo                      145 kB/s | 982  B     00:00    
+Metadata cache created.
+[vagrant@centos8 repo]$ 
+
+[vagrant@centos8 network-scripts]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 79242sec preferred_lft 79242sec
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:18:b6:69 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.56.101/24 brd 192.168.56.255 scope global dynamic noprefixroute eth1
+       valid_lft 455sec preferred_lft 455sec
+    inet6 fe80::a77:c0ee:f564:8adc/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[vagrant@centos8 network-scripts]$ 
+[vagrant@centos8 ~]$ yum repolist all
+Failed to set locale, defaulting to C.UTF-8
+repo id                repo name                       status
+appstream              CentOS Linux 8 - AppStream      enabled
+appstream-source       CentOS Linux 8 - AppStream - So disabled
+baseos                 CentOS Linux 8 - BaseOS         enabled
+baseos-source          CentOS Linux 8 - BaseOS - Sourc disabled
+debuginfo              CentOS Linux 8 - Debuginfo      disabled
+epel                   Extra Packages for Enterprise L enabled
+epel-debuginfo         Extra Packages for Enterprise L disabled
+epel-modular           Extra Packages for Enterprise L disabled
+epel-modular-debuginfo Extra Packages for Enterprise L disabled
+epel-modular-source    Extra Packages for Enterprise L disabled
+epel-source            Extra Packages for Enterprise L disabled
+extras                 CentOS Linux 8 - Extras         enabled
+extras-source          CentOS Linux 8 - Extras - Sourc disabled
+ha                     CentOS Linux 8 - HighAvailabili disabled
+localrepo              localRepo                       enabled
+plus                   CentOS Linux 8 - Plus           disabled
+plus-source            CentOS Linux 8 - Plus - Source  disabled
+powertools             CentOS Linux 8 - PowerTools     disabled
+powertools-source      CentOS Linux 8 - PowerTools - S disabled
+
+[vagrant@centos8 ~]$ sudo yum --disablerepo="*" --enablerepo=localrepo install procs
+Failed to set locale, defaulting to C.UTF-8
+localRepo                      2.9 MB/s | 3.0 kB     00:00    
+Dependencies resolved.
+===============================================================
+ Package     Architecture Version        Repository       Size
+===============================================================
+Installing:
+ procs       x86_64       0.13.3-1       localrepo       2.0 M
+
+Transaction Summary
+===============================================================
+Install  1 Package
+
+Total size: 2.0 M
+Installed size: 5.7 M
+Is this ok [y/N]: y
+Downloading Packages:
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                       1/1 
+  Installing       : procs-0.13.3-1.x86_64                 1/1 
+  Running scriptlet: procs-0.13.3-1.x86_64                 1/1 
+  Verifying        : procs-0.13.3-1.x86_64                 1/1 
+
+Installed:
+  procs-0.13.3-1.x86_64                                        
+
+Complete!
+[vagrant@centos8 ~]$
+[vagrant@centos8 ~]$ procs --version
+procs "0.13.3 ( rev: 6bd3d60, rustc: 1.64.0, build at: 2022/10/18 03:21:20 )"
+[vagrant@centos8 ~]$ 
+
+
+
+
+
+11) Запретить удаление файла, даже пользователем root, создать файл imortalfile и попытаться
+  его удалить из под root, результатом должно быть “operation not permitted”. Подсказка chattr(1)
+
+  vagrant@ubuntu2204:~$ touch imortal_file
+vagrant@ubuntu2204:~$ ls -la
+total 40
+drwxr-x--- 4 vagrant vagrant 4096 Dec 19 14:45 .
+drwxr-xr-x 3 root    root    4096 Nov 19 20:10 ..
+-rw------- 1 vagrant vagrant 1446 Dec 19 09:53 .bash_history
+-rw-r--r-- 1 vagrant vagrant  220 Jan  6  2022 .bash_logout
+-rw-r--r-- 1 vagrant vagrant 3775 Nov 19 20:24 .bashrc
+drwxr-xr-x 2 vagrant vagrant 4096 Nov 19 20:24 .cache
+-rw-r--r-- 1 vagrant vagrant  807 Jan  6  2022 .profile
+drwx------ 2 vagrant vagrant 4096 Dec 19 11:17 .ssh
+-rw------- 1 vagrant vagrant 1870 Dec 16 15:00 .viminfo
+-rw-r--r-- 1 vagrant vagrant   13 Nov 19 20:24 .vimrc
+-rw-rw-r-- 1 vagrant vagrant    0 Dec 19 14:45 imortal_file
+vagrant@ubuntu2204:~$ sudo chattr +i imortal_file 
+vagrant@ubuntu2204:~$ sudo rm imortal_file 
+rm: cannot remove 'imortal_file': Operation not permitted
+vagrant@ubuntu2204:~$ rm imortal_file 
+rm: cannot remove 'imortal_file': Operation not permitted
+vagrant@ubuntu2204:~$ sudo su
+root@ubuntu2204:/home/vagrant# ls -la
+total 40
+drwxr-x--- 4 vagrant vagrant 4096 Dec 19 14:45 .
+drwxr-xr-x 3 root    root    4096 Nov 19 20:10 ..
+-rw------- 1 vagrant vagrant 1446 Dec 19 09:53 .bash_history
+-rw-r--r-- 1 vagrant vagrant  220 Jan  6  2022 .bash_logout
+-rw-r--r-- 1 vagrant vagrant 3775 Nov 19 20:24 .bashrc
+drwxr-xr-x 2 vagrant vagrant 4096 Nov 19 20:24 .cache
+-rw-rw-r-- 1 vagrant vagrant    0 Dec 19 14:45 imortal_file
+-rw-r--r-- 1 vagrant vagrant  807 Jan  6  2022 .profile
+drwx------ 2 vagrant vagrant 4096 Dec 19 11:17 .ssh
+-rw------- 1 vagrant vagrant 1870 Dec 16 15:00 .viminfo
+-rw-r--r-- 1 vagrant vagrant   13 Nov 19 20:24 .vimrc
+root@ubuntu2204:/home/vagrant# rm imortal_file 
+rm: cannot remove 'imortal_file': Operation not permitted
+root@ubuntu2204:/home/vagrant# 
+
+
+12) Подключить bash_completion, проверить его работу на примере timedatectl
+
+root@ubuntu2204:~# . /etc/bash_completion
+[vagrant@centos8 ~]$ timedatectl 
+list-timezones   set-time         show-timesync
+set-local-rtc    set-timezone     status
+set-ntp          show             timesync-status
+[vagrant@centos8 ~]$ timedatectl 
+
+
+
+13) Настроить синхронизацию времени через systmd-timesyncd.service с сервером ru.pool.NTP.org, 
+потом установить и произвести подобную настройку ntpd.
+
+vagrant@ubuntu2204:~$ systemctl status systemd-timesyncd.service
+○ systemd-timesyncd.service - Network Time Synchronization
+     Loaded: loaded (/lib/systemd/system/systemd-timesyncd.service>
+     Active: inactive (dead)
+       Docs: man:systemd-timesyncd.service(8)
+vagrant@ubuntu2204:~$ sudo systemctl start systemd-timesyncd.service
+vagrant@ubuntu2204:~$ systemctl status systemd-timesyncd.service
+● systemd-timesyncd.service - Network Time Synchronization
+     Loaded: loaded (/lib/systemd/system/systemd-timesyncd.service>
+     Active: active (running) since Tue 2022-12-20 13:07:50 UTC; 1>
+       Docs: man:systemd-timesyncd.service(8)
+   Main PID: 4182 (systemd-timesyn)
+     Status: "Initial synchronization to time server 91.189.91.157>
+      Tasks: 2 (limit: 2237)
+     Memory: 1.3M
+        CPU: 41ms
+     CGroup: /system.slice/systemd-timesyncd.service
+             └─4182 /lib/systemd/systemd-timesyncd
+
+vagrant@ubuntu2204:/etc/systemd$ cat timesyncd.conf 
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it under the
+#  terms of the GNU Lesser General Public License as published by the Free
+#  Software Foundation; either version 2.1 of the License, or (at your option)
+#  any later version.
+#
+# Entries in this file show the compile time defaults. Local configuration
+# should be created by either modifying this file, or by creating "drop-ins" in
+# the timesyncd.conf.d/ subdirectory. The latter is generally recommended.
+# Defaults can be restored by simply deleting this file and all drop-ins.
+#
+# See timesyncd.conf(5) for details.
+
+[Time]
+#NTP=
+#FallbackNTP=ntp.ubuntu.com
+#RootDistanceMaxSec=5
+#PollIntervalMinSec=32
+#PollIntervalMaxSec=2048
+vagrant@ubuntu2204:/etc/systemd$ sudo vim timesyncd.conf 
+
+vagrant@ubuntu2204:/etc/systemd$ cat timesyncd.conf 
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it under the
+#  terms of the GNU Lesser General Public License as published by the Free
+#  Software Foundation; either version 2.1 of the License, or (at your option)
+#  any later version.
+#
+# Entries in this file show the compile time defaults. Local configuration
+# should be created by either modifying this file, or by creating "drop-ins" in
+# the timesyncd.conf.d/ subdirectory. The latter is generally recommended.
+# Defaults can be restored by simply deleting this file and all drop-ins.
+#
+# See timesyncd.conf(5) for details.
+
+[Time]
+NTP=ru.pool.NTP.org
+#FallbackNTP=ntp.ubuntu.com
+#RootDistanceMaxSec=5
+#PollIntervalMinSec=32
+#PollIntervalMaxSec=2048
+
+vagrant@ubuntu2204:/etc/systemd$ 
+
+vagrant@ubuntu2204:/etc/systemd$ sudo systemctl restart systemd-timesyncd.service
+vagrant@ubuntu2204:/etc/systemd$ sudo systemctl status systemd-timesyncd.service
+● systemd-timesyncd.service - Network Time Synchronization
+     Loaded: loaded (/lib/systemd/system/systemd-timesyncd.service>
+     Active: active (running) since Tue 2022-12-20 16:37:57 MSK; 4>
+       Docs: man:systemd-timesyncd.service(8)
+   Main PID: 4285 (systemd-timesyn)
+     Status: "Initial synchronization to time server 192.36.143.13>
+      Tasks: 2 (limit: 2237)
+     Memory: 1.2M
+        CPU: 36ms
+     CGroup: /system.slice/systemd-timesyncd.service
+             └─4285 /lib/systemd/systemd-timesyncd
+
+Dec 20 16:37:56 ubuntu2204.localdomain systemd[1]: Starting Networ>
+Dec 20 16:37:57 ubuntu2204.localdomain systemd[1]: Started Network>
+Dec 20 16:37:57 ubuntu2204.localdomain systemd-timesyncd[4285]: In>
+
+vagrant@ubuntu2204:/etc/systemd$ timedatectl 
+               Local time: Tue 2022-12-20 16:38:11 MSK
+           Universal time: Tue 2022-12-20 13:38:11 UTC
+                 RTC time: Tue 2022-12-20 13:38:11
+                Time zone: Europe/Moscow (MSK, +0300)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+vagrant@ubuntu2204:/etc/systemd$ 
+
+
+
+
+vagrant@ubuntu2204:~$ sudo apt install ntp
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libevent-pthreads-2.1-7 libopts25 sntp
+Suggested packages:
+  ntp-doc
+The following packages will be REMOVED:
+  systemd-timesyncd
+The following NEW packages will be installed:
+  libevent-pthreads-2.1-7 libopts25 ntp sntp
+0 upgraded, 4 newly installed, 1 to remove and 6 not upgraded.
+Need to get 855 kB of archives.
+After this operation, 2296 kB of additional disk space will be used.
+Do you want to continue? [Y/n] y
+Get:1 https://mirrors.edge.kernel.org/ubuntu jammy/main amd64 libevent-pthreads-2.1-7 amd64 2.1.12-stable-1build3 [7642 B]
+Get:2 https://mirrors.edge.kernel.org/ubuntu jammy/universe amd64 libopts25 amd64 1:5.18.16-4 [59.5 kB]
+Get:3 https://mirrors.edge.kernel.org/ubuntu jammy/universe amd64 ntp amd64 1:4.2.8p15+dfsg-1ubuntu2 [721 kB]
+Get:4 https://mirrors.edge.kernel.org/ubuntu jammy/universe amd64 sntp amd64 1:4.2.8p15+dfsg-1ubuntu2 [67.1 kB]
+Fetched 855 kB in 9s (93.4 kB/s)
+(Reading database ... 111139 files and directories currently instal
+led.)
+Removing systemd-timesyncd (249.11-0ubuntu3.6) ...
+Selecting previously unselected package libevent-pthreads-2.1-7:amd
+64.
+(Reading database ... 111125 files and directories currently instal
+led.)
+Preparing to unpack .../libevent-pthreads-2.1-7_2.1.12-stable-1buil
+d3_amd64.deb ...
+Unpacking libevent-pthreads-2.1-7:amd64 (2.1.12-stable-1build3) ...
+Selecting previously unselected package libopts25:amd64.
+Preparing to unpack .../libopts25_1%3a5.18.16-4_amd64.deb ...
+Unpacking libopts25:amd64 (1:5.18.16-4) ...
+Selecting previously unselected package ntp.
+Preparing to unpack .../ntp_1%3a4.2.8p15+dfsg-1ubuntu2_amd64.deb ..
+.
+Unpacking ntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+Selecting previously unselected package sntp.
+Preparing to unpack .../sntp_1%3a4.2.8p15+dfsg-1ubuntu2_amd64.deb .
+..
+Unpacking sntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+Setting up libopts25:amd64 (1:5.18.16-4) ...
+Setting up ntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+Created symlink /etc/systemd/system/network-pre.target.wants/ntp-sy
+stemd-netif.path → /lib/systemd/system/ntp-systemd-netif.path.
+Created symlink /etc/systemd/system/multi-user.target.wants/ntp.ser
+vice → /lib/systemd/system/ntp.service.
+ntp-systemd-netif.service is a disabled or a static unit, not start
+ing it.
+Setting up libevent-pthreads-2.1-7:amd64 (2.1.12-stable-1build3) ..
+.
+Setting up sntp (1:4.2.8p15+dfsg-1ubuntu2) ...
+Processing triggers for man-db (2.10.2-1) ...
+Processing triggers for dbus (1.12.20-2ubuntu4.1) ...
+Processing triggers for libc-bin (2.35-0ubuntu3.1) ...
+Scanning processes...                                              
+Scanning linux images...                                           
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on
+ this host.
+vagrant@ubuntu2204:~$ sudo vim /etc/ntp.conf
+
+server 0.ru.pool.ntp.org
+server 1.ru.pool.ntp.org
+server 2.ru.pool.ntp.org
+server 3.ru.pool.ntp.org
+
+vagrant@ubuntu2204:~$ sudo systemctl restart ntp
+vagrant@ubuntu2204:~$ sudo systemctl status ntp
+● ntp.service - Network Time Service
+     Loaded: loaded (/lib/systemd/system/ntp.service; enabled; ven>
+     Active: active (running) since Tue 2022-12-20 17:10:04 MSK; 9>
+       Docs: man:ntpd(8)
+    Process: 1602 ExecStart=/usr/lib/ntp/ntp-systemd-wrapper (code>
+   Main PID: 1608 (ntpd)
+      Tasks: 2 (limit: 2237)
+     Memory: 1.3M
+        CPU: 12ms
+     CGroup: /system.slice/ntp.service
+             └─1608 /usr/sbin/ntpd -p /var/run/ntpd.pid -g -u 114:>
+
+Dec 20 17:10:04 ubuntu2204.localdomain ntpd[1608]: Listening on ro>
+Dec 20 17:10:04 ubuntu2204.localdomain ntpd[1608]: kernel reports >
+Dec 20 17:10:04 ubuntu2204.localdomain ntpd[1608]: kernel reports >
+Dec 20 17:10:04 ubuntu2204.localdomain systemd[1]: Started Network>
+Dec 20 17:10:05 ubuntu2204.localdomain ntpd[1608]: Soliciting pool>
+Dec 20 17:10:06 ubuntu2204.localdomain ntpd[1608]: Soliciting pool>
+Dec 20 17:10:07 ubuntu2204.localdomain ntpd[1608]: Soliciting pool>
+Dec 20 17:10:08 ubuntu2204.localdomain ntpd[1608]: Soliciting pool>
+Dec 20 17:10:09 ubuntu2204.localdomain ntpd[1608]: Soliciting pool>
+Dec 20 17:10:10 ubuntu2204.localdomain ntpd[1608]: Soliciting pool>
+lines 1-22/22 (END)
+
+vagrant@ubuntu2204:~$ ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+ ntp.ubuntu.com  .POOL.          16 p    -   64    0    0.000   +0.000   0.000
+ ntp.ix.ru       .GPS.            1 u   46   64    1   17.197   -0.160   0.000
+ l37-193-156-169 194.190.168.1    2 u   46   64    1   76.596   +2.055   0.000
+ ground.corbina. 194.58.204.20    2 u   44   64    1   17.936   -0.511   0.000
+ cello.corbina.n 89.109.251.21    2 u   49   64    1   23.509   -2.684   0.000
+ 185.125.190.58  167.28.20.25     2 u   46   64    1   54.755   +1.380   0.000
+ 185.125.190.56  167.28.20.25     2 u   47   64    1   60.547   -1.440   0.000
+ 185.125.190.57  167.28.20.25     2 u   43   64    1   63.349  +10.118   0.000
+ alphyn.canonica 94.198.159.10    2 u   43   64    1  130.332   +1.314   0.000
+ pugot.canonical 17.253.108.125   2 u   42   64    1   47.977   -1.931   0.000
+vagrant@ubuntu2204:~$ date
+Tue Dec 20 17:11:29 MSK 2022
+vagrant@ubuntu2204:~$ 
+

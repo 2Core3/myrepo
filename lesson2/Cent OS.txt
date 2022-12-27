@@ -1,0 +1,722 @@
+Cent OS
+
+3) Произвести минимальную настройку
+
+Hostname
+
+[vagrant@centos8 ~]$ hostname
+centos8.localdomain
+[vagrant@centos8 ~]$ sudo hostnamectl set-hostname centos
+[vagrant@centos8 ~]$ exit
+logout
+core@XB-NB:~/vagrant_vm/centos8$ vagrant ssh
+Last login: Thu Dec  8 15:29:25 2022 from 10.0.2.2
+[vagrant@centos ~]$ hostname
+centos
+
+
+IP
+
+[vagrant@centos ~]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 78258sec preferred_lft 78258sec
+[vagrant@centos ~]$ sudo ip addr add 192.168.0.200/255.255.255.0 dev eth0
+[vagrant@centos ~]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 78252sec preferred_lft 78252sec
+    inet 192.168.0.200/24 scope global eth0
+       valid_lft forever preferred_lft forever
+[vagrant@centos ~]$ 
+
+
+Netplan (/etc/sysconfig/network-scripts/ifcfg-eth1)
+
+
+[vagrant@centos ~]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 86029sec preferred_lft 86029sec
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:22:fd:e3 brd ff:ff:ff:ff:ff:ff
+
+[vagrant@centos network-scripts]$ sudo vim ifcfg-eth1
+
+[vagrant@centos network-scripts]$ sudo ifup eth1
+Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/11)
+[vagrant@centos network-scripts]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 85646sec preferred_lft 85646sec
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:22:fd:e3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.35/24 brd 192.168.1.255 scope global noprefixroute eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::71d1:60aa:78c4:596c/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[vagrant@centos network-scripts]$ ls -la
+total 12
+drwxr-xr-x. 2 root root   42 Dec  8 15:58 .
+drwxr-xr-x. 5 root root 4096 Nov  7 17:18 ..
+-rw-r--r--. 1 root root  323 Dec  8 15:42 ifcfg-eth0
+-rw-r--r--. 1 root root  336 Dec  8 15:58 ifcfg-eth1
+[vagrant@centos network-scripts]$ cat ifcfg-eth1 
+TYPE="Ethernet"
+PROXY_METHOD="none"
+BROWSER_ONLY="no"
+BOOTPROTO="none"
+DNS1="8.8.8.8"
+IPADDR0="192.168.1.35"
+PREFIX0=24
+GATEWAY0="192.168.1.1"
+DEFROUTE="yes"
+IPV4_FAILURE_FATAL="no"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+IPV6_DEFROUTE="yes"
+IPV6_FAILURE_FATAL="no"
+IPV6_ADDR_GEN_MODE="stable-privacy"
+NAME="eth1"
+DEVICE="eth1"
+ONBOOT="yes"
+[vagrant@centos network-scripts]$ 
+
+
+Hosts  
+[vagrant@centos etc]$ cat /etc/hosts 
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+127.0.0.1 centos8.localdomain
+
+[vagrant@centos etc]$ sudo vim /etc/hosts 
+[vagrant@centos etc]$ hostname
+centos
+[vagrant@centos etc]$ 
+
+4) Снимок_CentOS.jpg
+
+5) Версия ядра
+[vagrant@centos etc]$ uname -rs
+Linux 4.18.0-348.7.1.el8_5.x86_64
+
+6) Вывести в файл список модулей
+
+[vagrant@centos etc]$ sudo fdisk -l
+Disk /dev/sda: 128 GiB, 137438953472 bytes, 268435456 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x89301897
+
+Device     Boot   Start       End   Sectors  Size Id Type
+/dev/sda1  *       2048   2099199   2097152    1G 83 Linux
+/dev/sda2       2099200 268435455 266336256  127G 8e Linux LVM
+
+
+Disk /dev/mapper/cl_centos8-root: 125 GiB, 134150619136 bytes, 262012928 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/mapper/cl_centos8-swap: 2.1 GiB, 2210398208 bytes, 4317184 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+[vagrant@centos etc]$ uname -rs
+Linux 4.18.0-348.7.1.el8_5.x86_64
+[vagrant@centos etc]$ lsmod
+Module                  Size  Used by
+nft_fib_inet           16384  1
+nft_fib_ipv4           16384  1 nft_fib_inet
+nft_fib_ipv6           16384  1 nft_fib_inet
+nft_fib                16384  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_reject_inet        16384  4
+nf_reject_ipv4         16384  1 nft_reject_inet
+nf_reject_ipv6         16384  1 nft_reject_inet
+nft_reject             16384  1 nft_reject_inet
+nft_ct                 20480  9
+nf_tables_set          49152  12
+nft_chain_nat          16384  12
+nf_nat                 45056  1 nft_chain_nat
+nf_conntrack          172032  2 nf_nat,nft_ct
+nf_defrag_ipv6         20480  1 nf_conntrack
+nf_defrag_ipv4         16384  1 nf_conntrack
+ip_set                 49152  0
+nf_tables             172032  259 nft_ct,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_chain_nat,nf_tables_set,nft_reject,nft_fib,nft_fib_inet
+nfnetlink              16384  3 nf_tables,ip_set
+intel_rapl_msr         16384  0
+intel_rapl_common      24576  1 intel_rapl_msr
+intel_pmc_core         45056  0
+crct10dif_pclmul       16384  1
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+pcspkr                 16384  0
+i2c_piix4              24576  0
+joydev                 24576  0
+video                  49152  0
+xfs                  1544192  2
+libcrc32c              16384  4 nf_conntrack,nf_nat,nf_tables,xfs
+sd_mod                 53248  3
+t10_pi                 16384  1 sd_mod
+sg                     40960  0
+ata_generic            16384  0
+vboxvideo              45056  1
+drm_ttm_helper         16384  1 vboxvideo
+ttm                    77824  2 vboxvideo,drm_ttm_helper
+drm_kms_helper        253952  1 vboxvideo
+drm                   573440  5 drm_kms_helper,vboxvideo,drm_ttm_helper,ttm
+ata_piix               36864  0
+ahci                   40960  2
+libahci                40960  1 ahci
+libata                270336  4 ata_piix,libahci,ahci,ata_generic
+e1000                 151552  0
+crc32c_intel           24576  1
+serio_raw              16384  0
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+sysimgblt              16384  1 drm_kms_helper
+fb_sys_fops            16384  1 drm_kms_helper
+vboxguest             385024  1
+dm_mirror              28672  0
+dm_region_hash         20480  1 dm_mirror
+dm_log                 20480  2 dm_region_hash,dm_mirror
+dm_mod                151552  9 dm_log,dm_mirror
+[vagrant@centos etc]$ lsmod  > spisok_modules.txt
+-bash: spisok_modules.txt: Permission denied
+[vagrant@centos etc]$ cd
+[vagrant@centos ~]$ lsmod  > spisok_modules.txt
+[vagrant@centos ~]$ cat spisok_modules.txt 
+Module                  Size  Used by
+nft_fib_inet           16384  1
+nft_fib_ipv4           16384  1 nft_fib_inet
+nft_fib_ipv6           16384  1 nft_fib_inet
+nft_fib                16384  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_reject_inet        16384  4
+nf_reject_ipv4         16384  1 nft_reject_inet
+nf_reject_ipv6         16384  1 nft_reject_inet
+nft_reject             16384  1 nft_reject_inet
+nft_ct                 20480  9
+nf_tables_set          49152  12
+nft_chain_nat          16384  12
+nf_nat                 45056  1 nft_chain_nat
+nf_conntrack          172032  2 nf_nat,nft_ct
+nf_defrag_ipv6         20480  1 nf_conntrack
+nf_defrag_ipv4         16384  1 nf_conntrack
+ip_set                 49152  0
+nf_tables             172032  259 nft_ct,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_chain_nat,nf_tables_set,nft_reject,nft_fib,nft_fib_inet
+nfnetlink              16384  3 nf_tables,ip_set
+intel_rapl_msr         16384  0
+intel_rapl_common      24576  1 intel_rapl_msr
+intel_pmc_core         45056  0
+crct10dif_pclmul       16384  1
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+pcspkr                 16384  0
+i2c_piix4              24576  0
+joydev                 24576  0
+video                  49152  0
+xfs                  1544192  2
+libcrc32c              16384  4 nf_conntrack,nf_nat,nf_tables,xfs
+sd_mod                 53248  3
+t10_pi                 16384  1 sd_mod
+sg                     40960  0
+ata_generic            16384  0
+vboxvideo              45056  1
+drm_ttm_helper         16384  1 vboxvideo
+ttm                    77824  2 vboxvideo,drm_ttm_helper
+drm_kms_helper        253952  1 vboxvideo
+drm                   573440  5 drm_kms_helper,vboxvideo,drm_ttm_helper,ttm
+ata_piix               36864  0
+ahci                   40960  2
+libahci                40960  1 ahci
+libata                270336  4 ata_piix,libahci,ahci,ata_generic
+e1000                 151552  0
+crc32c_intel           24576  1
+serio_raw              16384  0
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+sysimgblt              16384  1 drm_kms_helper
+fb_sys_fops            16384  1 drm_kms_helper
+vboxguest             385024  1
+dm_mirror              28672  0
+dm_region_hash         20480  1 dm_mirror
+dm_log                 20480  2 dm_region_hash,dm_mirror
+dm_mod                151552  9 dm_log,dm_mirror
+[vagrant@centos ~]$ 
+
+7) Посмотреть информацию о процессоре и модулях оперативной памяти
+
+[vagrant@centos ~]$ lscpu
+Architecture:        x86_64
+CPU op-mode(s):      32-bit, 64-bit
+Byte Order:          Little Endian
+CPU(s):              2
+On-line CPU(s) list: 0,1
+Thread(s) per core:  1
+Core(s) per socket:  2
+Socket(s):           1
+NUMA node(s):        1
+Vendor ID:           GenuineIntel
+CPU family:          6
+Model:               140
+Model name:          11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
+Stepping:            1
+CPU MHz:             2803.198
+BogoMIPS:            5606.39
+Hypervisor vendor:   KVM
+Virtualization type: full
+L1d cache:           48K
+L1i cache:           32K
+L2 cache:            1280K
+L3 cache:            12288K
+NUMA node0 CPU(s):   0,1
+Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single pti fsgsbase bmi1 avx2 bmi2 invpcid rdseed clflushopt md_clear flush_l1d arch_capabilities
+[vagrant@centos ~]$ 
+
+
+
+
+[vagrant@centos ~]$ sudo dmidecode 
+# dmidecode 3.2
+Getting SMBIOS data from sysfs.
+SMBIOS 2.5 present.
+10 structures occupying 455 bytes.
+Table at 0x000E1000.
+
+Handle 0x0000, DMI type 0, 20 bytes
+BIOS Information
+	Vendor: innotek GmbH
+	Version: VirtualBox
+	Release Date: 12/01/2006
+	Address: 0xE0000
+	Runtime Size: 128 kB
+	ROM Size: 128 kB
+	Characteristics:
+		ISA is supported
+		PCI is supported
+		Boot from CD is supported
+		Selectable boot is supported
+		8042 keyboard services are supported (int 9h)
+		CGA/mono video services are supported (int 10h)
+		ACPI is supported
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+	Manufacturer: innotek GmbH
+	Product Name: VirtualBox
+	Version: 1.2
+	Serial Number: 0
+	UUID: 8d98b8d3-40c5-4c06-9fe9-73fc536cd541
+	Wake-up Type: Power Switch
+	SKU Number: Not Specified
+	Family: Virtual Machine
+
+Handle 0x0008, DMI type 2, 15 bytes
+Base Board Information
+	Manufacturer: Oracle Corporation
+	Product Name: VirtualBox
+	Version: 1.2
+	Serial Number: 0
+	Asset Tag: Not Specified
+	Features:
+		Board is a hosting board
+	Location In Chassis: Not Specified
+	Chassis Handle: 0x0003
+	Type: Motherboard
+	Contained Object Handles: 0
+
+Handle 0x0003, DMI type 3, 13 bytes
+Chassis Information
+	Manufacturer: Oracle Corporation
+	Type: Other
+	Lock: Not Present
+	Version: Not Specified
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Boot-up State: Safe
+	Power Supply State: Safe
+	Thermal State: Safe
+	Security Status: None
+
+Handle 0x0007, DMI type 126, 42 bytes
+Inactive
+
+Handle 0x0005, DMI type 126, 15 bytes
+Inactive
+
+Handle 0x0006, DMI type 126, 34 bytes
+Inactive
+
+Handle 0x0002, DMI type 11, 7 bytes
+OEM Strings
+	String 1: vboxVer_7.0.4
+	String 2: vboxRev_154605
+
+Handle 0x0008, DMI type 128, 8 bytes
+OEM-specific Type
+	Header and Data:
+		80 08 08 00 FF C5 2A 00
+
+Handle 0xFEFF, DMI type 127, 4 bytes
+End Of Table
+
+8) Получить информацию о жестком диске
+
+[vagrant@centos ~]$ lsblk 
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                   8:0    0  128G  0 disk 
+|-sda1                8:1    0    1G  0 part /boot
+`-sda2                8:2    0  127G  0 part 
+  |-cl_centos8-root 253:0    0  125G  0 lvm  /
+  `-cl_centos8-swap 253:1    0  2.1G  0 lvm  [SWAP]
+[vagrant@centos ~]$ 
+
+9) Добавить в виртуальную машину второй сетевой интерфейс
+
+[vagrant@centos ~]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 83360sec preferred_lft 83360sec
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:22:fd:e3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.35/24 brd 192.168.1.255 scope global noprefixroute eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::71d1:60aa:78c4:596c/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[vagrant@centos ~]$ 
+
+[vagrant@centos ~]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 86394sec preferred_lft 86394sec
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:22:fd:e3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.35/24 brd 192.168.1.255 scope global noprefixroute eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::71d1:60aa:78c4:596c/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:5c:6c:13 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::f22e:5fbf:8990:b32e/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[vagrant@centos ~]$ 
+
+
+
+10) Вывести инфо о PCIEx
+
+[vagrant@centos ~]$ lsblk 
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                   8:0    0  128G  0 disk 
+|-sda1                8:1    0    1G  0 part /boot
+`-sda2                8:2    0  127G  0 part 
+  |-cl_centos8-root 253:0    0  125G  0 lvm  /
+  `-cl_centos8-swap 253:1    0  2.1G  0 lvm  [SWAP]
+[vagrant@centos ~]$ ip ad
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 83360sec preferred_lft 83360sec
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:22:fd:e3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.35/24 brd 192.168.1.255 scope global noprefixroute eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::71d1:60aa:78c4:596c/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[vagrant@centos ~]$ lspci -vmm
+Slot:	00:00.0
+Class:	Host bridge
+Vendor:	Intel Corporation
+Device:	440FX - 82441FX PMC [Natoma]
+Rev:	02
+
+Slot:	00:01.0
+Class:	ISA bridge
+Vendor:	Intel Corporation
+Device:	82371SB PIIX3 ISA [Natoma/Triton II]
+
+Slot:	00:01.1
+Class:	IDE interface
+Vendor:	Intel Corporation
+Device:	82371AB/EB/MB PIIX4 IDE
+Rev:	01
+ProgIf:	8a
+
+Slot:	00:02.0
+Class:	VGA compatible controller
+Vendor:	InnoTek Systemberatung GmbH
+Device:	VirtualBox Graphics Adapter
+
+Slot:	00:03.0
+Class:	Ethernet controller
+Vendor:	Intel Corporation
+Device:	82540EM Gigabit Ethernet Controller
+SVendor:	Intel Corporation
+SDevice:	PRO/1000 MT Desktop Adapter
+Rev:	02
+
+Slot:	00:04.0
+Class:	System peripheral
+Vendor:	InnoTek Systemberatung GmbH
+Device:	VirtualBox Guest Service
+
+Slot:	00:07.0
+Class:	Bridge
+Vendor:	Intel Corporation
+Device:	82371AB/EB/MB PIIX4 ACPI
+Rev:	08
+
+Slot:	00:08.0
+Class:	Ethernet controller
+Vendor:	Intel Corporation
+Device:	82540EM Gigabit Ethernet Controller
+SVendor:	Intel Corporation
+SDevice:	PRO/1000 MT Desktop Adapter
+Rev:	02
+
+Slot:	00:0d.0
+Class:	SATA controller
+Vendor:	Intel Corporation
+Device:	82801HM/HEM (ICH8M/ICH8M-E) SATA Controller [AHCI mode]
+Rev:	02
+ProgIf:	01
+
+11) 
+[vagrant@centos ~]$ lsmod
+Module                  Size  Used by
+nft_fib_inet           16384  1
+nft_fib_ipv4           16384  1 nft_fib_inet
+nft_fib_ipv6           16384  1 nft_fib_inet
+nft_fib                16384  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_reject_inet        16384  4
+nf_reject_ipv4         16384  1 nft_reject_inet
+nf_reject_ipv6         16384  1 nft_reject_inet
+nft_reject             16384  1 nft_reject_inet
+nft_ct                 20480  9
+nf_tables_set          49152  12
+nft_chain_nat          16384  12
+nf_nat                 45056  1 nft_chain_nat
+nf_conntrack          172032  2 nf_nat,nft_ct
+nf_defrag_ipv6         20480  1 nf_conntrack
+nf_defrag_ipv4         16384  1 nf_conntrack
+ip_set                 49152  0
+nf_tables             172032  259 nft_ct,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_chain_nat,nf_tables_set,nft_reject,nft_fib,nft_fib_inet
+nfnetlink              16384  3 nf_tables,ip_set
+intel_rapl_msr         16384  0
+intel_rapl_common      24576  1 intel_rapl_msr
+intel_pmc_core         45056  0
+crct10dif_pclmul       16384  1
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+pcspkr                 16384  0
+i2c_piix4              24576  0
+joydev                 24576  0
+video                  49152  0
+xfs                  1544192  2
+libcrc32c              16384  4 nf_conntrack,nf_nat,nf_tables,xfs
+sd_mod                 53248  3
+t10_pi                 16384  1 sd_mod
+sg                     40960  0
+ata_generic            16384  0
+vboxvideo              45056  1
+drm_ttm_helper         16384  1 vboxvideo
+ttm                    77824  2 vboxvideo,drm_ttm_helper
+drm_kms_helper        253952  1 vboxvideo
+drm                   573440  5 drm_kms_helper,vboxvideo,drm_ttm_helper,ttm
+ahci                   40960  2
+libahci                40960  1 ahci
+ata_piix               36864  0
+crc32c_intel           24576  1
+libata                270336  4 ata_piix,libahci,ahci,ata_generic
+e1000                 151552  0
+serio_raw              16384  0
+vboxguest             385024  1
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+sysimgblt              16384  1 drm_kms_helper
+fb_sys_fops            16384  1 drm_kms_helper
+dm_mirror              28672  0
+dm_region_hash         20480  1 dm_mirror
+dm_log                 20480  2 dm_region_hash,dm_mirror
+dm_mod                151552  9 dm_log,dm_mirror
+[vagrant@centos ~]$ lshw -C network
+WARNING: you should run this program as super-user.
+  *-network:0               
+       description: Ethernet interface
+       product: 82540EM Gigabit Ethernet Controller
+       vendor: Intel Corporation
+       physical id: 3
+       bus info: pci@0000:00:03.0
+       logical name: eth0
+       version: 02
+       serial: 08:00:27:8c:c8:ad
+       size: 1Gbit/s
+       capacity: 1Gbit/s
+       width: 32 bits
+       clock: 66MHz
+       capabilities: bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+       configuration: autonegotiation=on broadcast=yes driver=e1000 driverversion=7.3.21-k8-NAPI duplex=full ip=10.0.2.15 latency=64 link=yes mingnt=255 multicast=yes port=twisted pair speed=1Gbit/s
+       resources: irq:19 memory:f0000000-f001ffff ioport:d010(size=8)
+  *-network:1
+       description: Ethernet interface
+       product: 82540EM Gigabit Ethernet Controller
+       vendor: Intel Corporation
+       physical id: 8
+       bus info: pci@0000:00:08.0
+       logical name: eth1
+       version: 02
+       serial: 08:00:27:22:fd:e3
+       size: 1Gbit/s
+       capacity: 1Gbit/s
+       width: 32 bits
+       clock: 66MHz
+       capabilities: bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+       configuration: autonegotiation=on broadcast=yes driver=e1000 driverversion=7.3.21-k8-NAPI duplex=full ip=192.168.1.35 latency=64 link=yes mingnt=255 multicast=yes port=twisted pair speed=1Gbit/s
+       resources: irq:16 memory:f0820000-f083ffff ioport:d040(size=8)
+  *-network:2
+       description: Ethernet interface
+       product: 82540EM Gigabit Ethernet Controller
+       vendor: Intel Corporation
+       physical id: 9
+       bus info: pci@0000:00:09.0
+       logical name: eth2
+       version: 02
+       serial: 08:00:27:5c:6c:13
+       size: 1Gbit/s
+       capacity: 1Gbit/s
+       width: 32 bits
+       clock: 66MHz
+       capabilities: bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+       configuration: autonegotiation=on broadcast=yes driver=e1000 driverversion=7.3.21-k8-NAPI duplex=full latency=64 link=yes mingnt=255 multicast=yes port=twisted pair speed=1Gbit/s
+       resources: irq:17 memory:f0840000-f085ffff ioport:d048(size=8)
+WARNING: output may be incomplete or inaccurate, you should run this program as super-user.
+[vagrant@centos ~]$ 
+
+[vagrant@centos ~]$ sudo rmmod e1000
+
+Скрины с VirtualBox
+CentOS удаление модуля сети №1.jpg
+CentOS удаление модуля сети №2.jpg
+
+
+Connection to 127.0.0.1 closed by remote host.
+core@XB-NB:~/vagrant_vm/centos8$ vagrant ssh
+Last login: Sat Dec 10 20:43:00 2022
+[vagrant@centos ~]$ ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+5: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:8c:c8:ad brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute eth0
+       valid_lft 86357sec preferred_lft 86357sec
+6: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:22:fd:e3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.35/24 brd 192.168.1.255 scope global noprefixroute eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::71d1:60aa:78c4:596c/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+7: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:5c:6c:13 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::f22e:5fbf:8990:b32e/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[vagrant@centos ~]$ lsmod 
+Module                  Size  Used by
+e1000                 151552  0
+nft_fib_inet           16384  1
+nft_fib_ipv4           16384  1 nft_fib_inet
+nft_fib_ipv6           16384  1 nft_fib_inet
+nft_fib                16384  3 nft_fib_ipv6,nft_fib_ipv4,nft_fib_inet
+nft_reject_inet        16384  4
+nf_reject_ipv4         16384  1 nft_reject_inet
+nf_reject_ipv6         16384  1 nft_reject_inet
+nft_reject             16384  1 nft_reject_inet
+nft_ct                 20480  9
+nf_tables_set          49152  12
+nft_chain_nat          16384  12
+nf_nat                 45056  1 nft_chain_nat
+nf_conntrack          172032  2 nf_nat,nft_ct
+nf_defrag_ipv6         20480  1 nf_conntrack
+nf_defrag_ipv4         16384  1 nf_conntrack
+ip_set                 49152  0
+nf_tables             172032  283 nft_ct,nft_reject_inet,nft_fib_ipv6,nft_fib_ipv4,nft_chain_nat,nf_tables_set,nft_reject,nft_fib,nft_fib_inet
+nfnetlink              16384  3 nf_tables,ip_set
+intel_rapl_msr         16384  0
+intel_rapl_common      24576  1 intel_rapl_msr
+intel_pmc_core         45056  0
+crct10dif_pclmul       16384  1
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+pcspkr                 16384  0
+joydev                 24576  0
+i2c_piix4              24576  0
+video                  49152  0
+xfs                  1544192  2
+libcrc32c              16384  4 nf_conntrack,nf_nat,nf_tables,xfs
+sd_mod                 53248  3
+t10_pi                 16384  1 sd_mod
+sg                     40960  0
+ata_generic            16384  0
+vboxvideo              45056  1
+drm_ttm_helper         16384  1 vboxvideo
+ttm                    77824  2 vboxvideo,drm_ttm_helper
+drm_kms_helper        253952  1 vboxvideo
+ahci                   40960  2
+libahci                40960  1 ahci
+drm                   573440  5 drm_kms_helper,vboxvideo,drm_ttm_helper,ttm
+ata_piix               36864  0
+crc32c_intel           24576  1
+libata                270336  4 ata_piix,libahci,ahci,ata_generic
+serio_raw              16384  0
+vboxguest             385024  1
+syscopyarea            16384  1 drm_kms_helper
+sysfillrect            16384  1 drm_kms_helper
+sysimgblt              16384  1 drm_kms_helper
+fb_sys_fops            16384  1 drm_kms_helper
+dm_mirror              28672  0
+dm_region_hash         20480  1 dm_mirror
+dm_log                 20480  2 dm_region_hash,dm_mirror
+dm_mod                151552  9 dm_log,dm_mirror
+[vagrant@centos ~]$ 
+
+
+
